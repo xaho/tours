@@ -1,72 +1,48 @@
 <head>
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ&loading=async&callback=initMap">
-  </script>
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ&loading=async&callback=initMap"></script>
   <script>
     async function parseTour(url) {
       const routeXml = await (await fetch(url)).text();
       const parser = new DOMParser();
       const route = parser.parseFromString(routeXml, 'text/xml');
-      const points = Array.from(route.querySelectorAll('trk > trkseg > trkpt')).map(point => {
-        const lat = point.getAttribute('lat');
-        const lon = point.getAttribute('lon');
-        return [+lon, +lat];
+      return Array.from(route.querySelectorAll('trk > trkseg > trkpt')).map(point => {
+        return { lng: +point.getAttribute('lon'), lat: +point.getAttribute('lat') };
       });
-      const pointLimits = points.reduce((prev, curr) => {
-        if (prev === null) return { lon: { min: curr[0], max: curr[0] }, lat: { min: curr[1], max: curr[1] } };
-        prev.lon.min = Math.min(prev.lon.min, curr[0]);
-        prev.lon.max = Math.max(prev.lon.max, curr[0]);
-        prev.lat.min = Math.min(prev.lat.min, curr[1]);
-        prev.lat.max = Math.max(prev.lat.max, curr[1]);
-        return prev;
-      }, null)
-      return { points, pointLimits };
     }
 
     async function initMap() {
+      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
       const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 8,
         center: { lat: 52.092, lng: 5.104 },
         mapTypeId: "terrain",
+        mapId: '4504f8b37365c3d0'
       });
 
-      function* ColorGenerator() {
-        yield '#FF0000';
-        yield '#00FF00';
-        yield '#0000FF';
-        yield '#FFFF00';
-        yield '#00FFFF';
-        yield '#FF00FF';
-        yield '#80FF00';
-        yield '#0080FF';
-        yield '#FF0080';
-        yield '#FF8000';
-        yield '#00FF80';
-        yield '#8000FF';
-      } 
-      const colorGenerator = ColorGenerator();
-
-      async function loadGpxToGmaps(file) {
-        const path = (await parseTour(file)).points.map(([lng, lat]) => {
-          return { lat, lng };
-        });
+      async function loadGpxToGmaps(file, color = '#FF0000') {
+        const path = (await parseTour(file))
         const polyline = new google.maps.Polyline({
           path,
           geodesic: true,
-          strokeColor: colorGenerator.next().value,
+          strokeColor: color,
           strokeOpacity: 1.0,
           strokeWeight: 2,
         });
-
         polyline.setMap(map);
+        const marker = new AdvancedMarkerElement({
+          map,
+          position: path[0],
+          title: /src\/(?<tourname>.*)\.gpx/.exec(file).groups.tourname
+        });
       }
       await loadGpxToGmaps('src/2024-09 Z-ZX Club Noordpolderzijl - 2.gpx');
       await loadGpxToGmaps('src/2024-09 Z-ZX Club Noordpolderzijl - 1.gpx');
-      await loadGpxToGmaps('src/2022-04 Z-ZX Club Bloesemrit.gpx'); 
-      await loadGpxToGmaps('src/2021-08 Japrun.gpx'); 
-      await loadGpxToGmaps('src/2022-09 Z-ZX Club Zuid-Holland.gpx'); 
+      await loadGpxToGmaps('src/2022-04 Z-ZX Club Bloesemrit.gpx');
+      await loadGpxToGmaps('src/2021-08 Japrun.gpx');
+      await loadGpxToGmaps('src/2022-09 Z-ZX Club Zuid-Holland.gpx');
       await loadGpxToGmaps('src/2022-10 Z-ZX Club Coevorden.gpx');
       await loadGpxToGmaps('/src/2022-05_Z-ZX_Club_Dongen.gpx');
-      await loadGpxToGmaps('/src/2022-06_Z-ZX_Club_Kersenrit_Beneden_Leeuwen.gpx');
+      await loadGpxToGmaps('/src/2022-06_Z-ZX_Club_Kersenrit_Beneden_Leeuwen.gpx', '#0000FF');
       await loadGpxToGmaps('/src/2023-06 Z-ZX Club Lottum.gpx');
       await loadGpxToGmaps('/src/2021-07 Belgium Z Owners route 2.gpx');
       await loadGpxToGmaps('/src/2021-07 Belgium Z Owners route 1.gpx');
@@ -80,7 +56,6 @@
     #map {
       flex: 1;
     }
-
     body {
       display: flex;
       flex-direction: row;
