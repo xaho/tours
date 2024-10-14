@@ -3,22 +3,22 @@ async function parseTour(url) {
     const parser = new DOMParser();
     const route = parser.parseFromString(routeXml, 'text/xml');
     return Array.from(route.querySelectorAll('trk > trkseg > trkpt')).map(point => {
-        return { lng: +point.getAttribute('lon'), lat: +point.getAttribute('lat') };
+        return {lng: +point.getAttribute('lon'), lat: +point.getAttribute('lat')};
     });
 }
 
 window.initMap = async function () {
-    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary('marker');
+    const {AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker');
     const map = new google.maps.Map(document.getElementById('map'), {
         zoom: 8,
-        center: { lat: 52.092, lng: 5.104 },
+        center: {lat: 52.092, lng: 5.104},
         mapTypeId: 'terrain',
         mapId: '4504f8b37365c3d0'
     });
 
-    async function loadGpxToGmaps({ files, albumUrl, date, color = '#FF0000' }) {
+    async function loadGpxToGmaps({files, albumUrl, date, color = '#FF0000'}) {
         for (const file of files) {
-            const path = (await parseTour(file))
+            const path = (await parseTour(file));
             new google.maps.Polyline({
                 path,
                 geodesic: true,
@@ -37,14 +37,12 @@ window.initMap = async function () {
                 gmpClickable: !!albumUrl,
             });
             if (albumUrl) {
-                marker.addListener('click', () => {
-                    window.open(albumUrl, '_blank');
-                });
+                marker.addListener('click', () => window.open(albumUrl, '_blank'));
             }
         }
     }
 
-    async function addEventToMap({ title, date, albumUrl, position }) {
+    async function addEventToMap({title, date, albumUrl, position}) {
         const marker = new AdvancedMarkerElement({
             map,
             position,
@@ -58,19 +56,18 @@ window.initMap = async function () {
         });
 
         if (albumUrl) {
-            marker.addListener('click', () => {
-                window.open(albumUrl, '_blank');
-            });
+            marker.addListener('click', () => window.open(albumUrl, '_blank'));
         }
     }
+
     for (const event of [
-        { date: '2021-10-10', title: 'JapFest', albumUrl: 'https://photos.app.goo.gl/Nf712gXEFfuAWzPi6', position: { lat: 52.9583015, lng: 6.5197671 } },
-        { date: '2022-07-03', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/hugWZThwUM18fShh9', position: { lat: 51.573976, lng: 5.659092 } },
-        { date: '2023-07-02', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/rnuKLQF1ddfF7ZQWA', position: { lat: 51.573976, lng: 5.661016 } },
-        { date: '2023-09-30', title: 'GoJapan', albumUrl: 'https://photos.app.goo.gl/EsMhXLd7uAsB8NGx5', position: { lat: 51.714717, lng: 4.883165 } },
-        { date: '2024-05-18', title: 'SPA Classic', albumUrl: 'https://photos.app.goo.gl/cuPdMh7APGJ3AnSa9', position: { lat: 50.442965, lng: 5.970453 } },
-        { date: '2024-07-06', title: 'CTD Summer Meet', albumUrl: 'https://photos.app.goo.gl/bSw33Cv9FAUcNwR3A', position: { lat: 51.638447, lng: 6.586215 } },
-        { date: '2024-07-07', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/mQm1eXdhwBV5zMYn6', position: { lat: 51.612371, lng: 4.901104 } },
+        {date: '2021-10-10', title: 'JapFest', albumUrl: 'https://photos.app.goo.gl/Nf712gXEFfuAWzPi6', position: {lat: 52.9583015, lng: 6.5197671}},
+        {date: '2022-07-03', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/hugWZThwUM18fShh9', position: {lat: 51.573976, lng: 5.659092}},
+        {date: '2023-07-02', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/rnuKLQF1ddfF7ZQWA', position: {lat: 51.573976, lng: 5.661016}},
+        {date: '2023-09-30', title: 'GoJapan', albumUrl: 'https://photos.app.goo.gl/EsMhXLd7uAsB8NGx5', position: {lat: 51.714717, lng: 4.883165}},
+        {date: '2024-05-18', title: 'SPA Classic', albumUrl: 'https://photos.app.goo.gl/cuPdMh7APGJ3AnSa9', position: {lat: 50.442965, lng: 5.970453}},
+        {date: '2024-07-06', title: 'CTD Summer Meet', albumUrl: 'https://photos.app.goo.gl/bSw33Cv9FAUcNwR3A', position: {lat: 51.638447, lng: 6.586215}},
+        {date: '2024-07-07', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/mQm1eXdhwBV5zMYn6', position: {lat: 51.612371, lng: 4.901104}},
     ]) {
         await addEventToMap(event);
     }
@@ -135,4 +132,4 @@ window.initMap = async function () {
     }]) {
         await loadGpxToGmaps(route);
     }
-}
+};

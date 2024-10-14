@@ -18,7 +18,8 @@ export default [
             '@stylistic/js': stylisticJs
         },
         rules: {
-            '@stylistic/js/quotes': ['error', 'single', { 'avoidEscape': true }]
+            '@stylistic/js/quotes': ['error', 'single', { 'avoidEscape': true }],
+            '@stylistic/js/semi': ['error', 'always'],
         },
         languageOptions: {
             globals: {
