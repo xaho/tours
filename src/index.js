@@ -8,11 +8,11 @@ async function parseTour(url) {
 }
 
 window.initMap = async function () {
-    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
-    const map = new google.maps.Map(document.getElementById("map"), {
+    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary('marker');
+    const map = new google.maps.Map(document.getElementById('map'), {
         zoom: 8,
         center: { lat: 52.092, lng: 5.104 },
-        mapTypeId: "terrain",
+        mapTypeId: 'terrain',
         mapId: '4504f8b37365c3d0'
     });
 
@@ -32,12 +32,12 @@ window.initMap = async function () {
                 title: /src\/(?<tourname>.*)\.gpx/.exec(file).groups.tourname,
                 content: new PinElement({
                     glyph: "'" + (new Date(date).getFullYear() - 2000),
-                    glyphColor: "white",
+                    glyphColor: 'white',
                 }).element,
                 gmpClickable: !!albumUrl,
             });
             if (albumUrl) {
-                marker.addListener('click', ({ domEvent, latLng }) => {
+                marker.addListener('click', () => {
                     window.open(albumUrl, '_blank');
                 });
             }
@@ -58,7 +58,7 @@ window.initMap = async function () {
         });
 
         if (albumUrl) {
-            marker.addListener('click', ({ domEvent, latLng }) => {
+            marker.addListener('click', () => {
                 window.open(albumUrl, '_blank');
             });
         }
