@@ -105,6 +105,10 @@ window.initMap = async function () {
         albumUrl: 'https://photos.app.goo.gl/AY5JFeMLGgAC5qBR8',
         date: '2022-10-08'
     }, {
+        files: ['src/2023-04-25 Nurburgring.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/s9zxWwGZYqJvkUVa7',
+        date: '2022-10-08'
+    }, {
         files: ['src/2023-06 Z-ZX Club Lottum.gpx'],
         albumUrl: 'https://photos.app.goo.gl/M9LuAb1JyFxrs6sT8',
         date: '2023-06-18'
