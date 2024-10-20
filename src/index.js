@@ -9,6 +9,22 @@ async function parseTour(url) {
 
 window.initMap = async function () {
     const {AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker');
+
+    function createRoutePin(text, pitstop = false) {
+        return new PinElement({
+            glyph: pitstop ? undefined : text,
+            glyphColor: pitstop ? undefined : 'white',
+        }).element;
+    }
+    function createEventPin(text) {
+        return new PinElement({
+            glyph: text,
+            background: '#1965C4',
+            glyphColor: 'white',
+            borderColor: '#1965C4'
+        }).element;
+    }
+
     const map = new google.maps.Map(document.getElementById('map'), {
         zoom: 8,
         center: {lat: 52.092, lng: 5.104},
@@ -16,8 +32,35 @@ window.initMap = async function () {
         mapId: '4504f8b37365c3d0'
     });
 
+    // Draw legend
+    const legend = document.getElementById('legend');
+    const redPin = createRoutePin("'XX");
+    redPin.style.display = 'inline-block';
+    let div = document.createElement('div');
+    div.innerHTML = `${redPin.outerHTML}<span>Tour in the year 'XX</span>`;
+    legend.appendChild(div);
+
+    const pitstopPin = createRoutePin('', true);
+    pitstopPin.style.display = 'inline-block';
+    div = document.createElement('div');
+    div.innerHTML = `${pitstopPin.outerHTML}<span>Planned stop in route</span>`;
+    legend.appendChild(div);
+
+    const bluePin = createEventPin("'XX");
+    bluePin.style.display = 'inline-block';
+    div = document.createElement('div');
+    div.innerHTML = `${bluePin.outerHTML}<span>Event in the year 'XX</span>`;
+    legend.appendChild(div);
+    div = document.createElement('div');
+    div.classList.add('legend-subtext');
+    div.innerHTML = '(Click marker to view photos)';
+    legend.appendChild(div);
+
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
+
     async function loadGpxToGmaps({files, albumUrl, date, color = '#FF0000'}) {
-        for (const file of files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             const path = (await parseTour(file));
             new google.maps.Polyline({
                 path,
@@ -30,11 +73,9 @@ window.initMap = async function () {
                 map,
                 position: path[0],
                 title: /src\/(?<tourname>.*)\.gpx/.exec(file).groups.tourname,
-                content: new PinElement({
-                    glyph: "'" + (new Date(date).getFullYear() - 2000),
-                    glyphColor: 'white',
-                }).element,
+                content: createRoutePin("'" + (new Date(date).getFullYear() - 2000), i > 0),
                 gmpClickable: !!albumUrl,
+                zIndex: 1-i
             });
             if (albumUrl) {
                 marker.addListener('click', () => window.open(albumUrl, '_blank'));
@@ -47,12 +88,7 @@ window.initMap = async function () {
             map,
             position,
             title,
-            content: new PinElement({
-                glyph: "'" + (new Date(date).getFullYear() - 2000),
-                background: '#1965C4',
-                glyphColor: 'white',
-                borderColor: '#1965C4'
-            }).element
+            content: createEventPin("'" + (new Date(date).getFullYear() - 2000))
         });
 
         if (albumUrl) {
@@ -87,6 +123,10 @@ window.initMap = async function () {
         files: ['src/2021-07 Belgium Z Owners route 1.gpx', 'src/2021-07 Belgium Z Owners route 2.gpx'],
         albumUrl: 'https://photos.app.goo.gl/RcRxjayz5LrttUCV9',
         date: '2021-07-10'
+    }, {
+        files: ['src/2021-09-18 Z-ZX Club Funpark Meppen.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/t8RMNywBsVaNTmKQ7',
+        date: '2021-09-18'
     }, {
         files: ['src/2022-04-24 Z-ZX Club Gooi- en Vechtstreek 1.gpx', 'src/2022-04-24 Z-ZX Club Gooi- en Vechtstreek 2.gpx'],
         albumUrl: 'https://photos.app.goo.gl/mkJi1BNcH4f6yFNS9',

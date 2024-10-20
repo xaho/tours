@@ -10,9 +10,29 @@
       display: flex;
       flex-direction: row;
     }
+    #legend {
+      background: #fff;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 2px;
+      box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px
+    }
+    #legend .GMAMP-maps-pin-view {
+        vertical-align: middle;
+    }
+    #legend > div > span {
+        margin-left: 12px;
+    }
+    #legend > .legend-subtext {
+        margin-top: 10px;
+    }
+    body > #legend {
+        display:none; /* Hide legend, until it is moved into the map */
+    }
   </style>
 </head>
 
 <body>
   <div id="map"></div>
+  <div id="legend"></div>
 </body>
