@@ -62,18 +62,37 @@ window.initMap = async function () {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const path = (await parseTour(file));
-            new google.maps.Polyline({
+            const polyline = new google.maps.Polyline({
                 path,
                 geodesic: true,
                 strokeColor: color,
-                strokeOpacity: 1.0,
-                strokeWeight: 2,
-            }).setMap(map);
+                strokeOpacity: .6,
+                strokeWeight: 3,
+            });
+            polyline.setMap(map);
+            polyline.originalColor = color;
+            google.maps.event.addListener(polyline, 'mouseover', function() {
+                this.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1 });
+            });
+            google.maps.event.addListener(polyline, 'mouseout', function() {
+                this.setOptions({strokeColor: polyline.originalColor, zIndex: 0, strokeOpacity: .6});
+            });
+            const markerContent = createRoutePin("'" + (new Date(date).getFullYear() - 2000), i > 0);
+            markerContent.addEventListener('mouseenter', function(event) {
+                polyline.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1});
+                event.stopPropagation();
+                event.preventDefault();
+            });
+            markerContent.addEventListener('mouseleave', function(event) {
+                polyline.setOptions({strokeColor: polyline.originalColor, zIndex: 0, strokeOpacity: .6 });
+                event.stopPropagation();
+                event.preventDefault();
+            });
             const marker = new AdvancedMarkerElement({
                 map,
                 position: path[0],
                 title: /src\/(?<tourname>.*)\.gpx/.exec(file).groups.tourname,
-                content: createRoutePin("'" + (new Date(date).getFullYear() - 2000), i > 0),
+                content: markerContent,
                 gmpClickable: !!albumUrl,
                 zIndex: 1-i
             });
@@ -173,6 +192,11 @@ window.initMap = async function () {
         albumUrl: 'https://photos.app.goo.gl/8Zq268VVKrxyBMNK8',
         date: '2022-06-26',
         color: '#0000FF'
+    }, {
+        files: ['src/2024-10-20 Z-ZX Club Halloweenroute.gpx'],
+        albumUrl: '',
+        date: '2024-10-20',
+        color: '#8C0DD1'
     }]) {
         await loadGpxToGmaps(route);
     }
