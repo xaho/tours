@@ -197,6 +197,10 @@ window.initMap = async function () {
         albumUrl: '',
         date: '2024-10-20',
         color: '#8C0DD1'
+    }, {
+        files: ['src/2025-05-18 Z-ZX Club Limburg - Het Witte Goud.gpx'],
+        albumUrl: '',
+        date: '2025-05-18',
     }]) {
         await loadGpxToGmaps(route);
     }

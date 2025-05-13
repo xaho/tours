@@ -6,7 +6,7 @@ Create new gpx tracks: https://gpx.studio/app#6.69/52.17/5.831
 - Put activity to `motorcycle` 
 - Put activity to `bike` for sections which are officially not roads
 - Rename `new file` to match tour ridden
-- File -> Export all...
+- File -> Export all -> Uncheck OpenStreetMap data
   
 Regex to remove excess data from GPX file:
 - Find: `(<trkpt lat="[\d\.]+" lon="[\d\.]+">)[\w\W]*?</trkpt>`
