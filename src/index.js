@@ -12,13 +12,14 @@ window.initMap = async function () {
 
     function createRoutePin(text, pitstop = false) {
         return new PinElement({
-            glyph: pitstop ? undefined : text,
+            glyphText: pitstop ? undefined : text,
             glyphColor: pitstop ? undefined : 'white',
         }).element;
     }
+
     function createEventPin(text) {
         return new PinElement({
-            glyph: text,
+            glyphText: text,
             background: '#1965C4',
             glyphColor: 'white',
             borderColor: '#1965C4'
@@ -71,30 +72,30 @@ window.initMap = async function () {
             });
             polyline.setMap(map);
             polyline.originalColor = color;
-            google.maps.event.addListener(polyline, 'mouseover', function() {
-                this.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1 });
+            google.maps.event.addListener(polyline, 'mouseover', function () {
+                this.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1});
             });
-            google.maps.event.addListener(polyline, 'mouseout', function() {
+            google.maps.event.addListener(polyline, 'mouseout', function () {
                 this.setOptions({strokeColor: polyline.originalColor, zIndex: 0, strokeOpacity: .6});
             });
             const markerContent = createRoutePin("'" + (new Date(date).getFullYear() - 2000), i > 0);
-            markerContent.addEventListener('mouseenter', function(event) {
+            markerContent.onmouseenter = function (event) {
                 polyline.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1});
                 event.stopPropagation();
                 event.preventDefault();
-            });
-            markerContent.addEventListener('mouseleave', function(event) {
-                polyline.setOptions({strokeColor: polyline.originalColor, zIndex: 0, strokeOpacity: .6 });
+            };
+            markerContent.onmouseleave = function (event) {
+                polyline.setOptions({strokeColor: polyline.originalColor, zIndex: 0, strokeOpacity: .6});
                 event.stopPropagation();
                 event.preventDefault();
-            });
+            };
             const marker = new AdvancedMarkerElement({
                 map,
                 position: path[0],
                 title: /src\/(?<tourname>.*)\.gpx/.exec(file).groups.tourname,
                 content: markerContent,
                 gmpClickable: !!albumUrl,
-                zIndex: 1-i
+                zIndex: 1 - i
             });
             if (albumUrl) {
                 marker.addListener('click', () => window.open(albumUrl, '_blank'));
@@ -123,6 +124,10 @@ window.initMap = async function () {
         {date: '2024-05-18', title: 'SPA Classic', albumUrl: 'https://photos.app.goo.gl/cuPdMh7APGJ3AnSa9', position: {lat: 50.442965, lng: 5.970453}},
         {date: '2024-07-06', title: 'CTD Summer Meet', albumUrl: 'https://photos.app.goo.gl/bSw33Cv9FAUcNwR3A', position: {lat: 51.638447, lng: 6.586215}},
         {date: '2024-07-07', title: 'Japan Classic Sunday', albumUrl: 'https://photos.app.goo.gl/mQm1eXdhwBV5zMYn6', position: {lat: 51.612371, lng: 4.901104}},
+        {date: '2025-03-01', title: 'ALV', albumUrl: 'https://photos.app.goo.gl/b7FLGqfXh6EjhWsU9', position: {lat: 51.9416639, lng: 5.7633148}},
+        {date: '2025-05-23', title: 'SPA Classic', albumUrl: 'https://photos.app.goo.gl/Y3aFsSKgHiUAJ4A7A', position: {lat: 50.442965, lng: 5.970453 + 0.002}},
+        {date: '2025-08-30', title: 'Kofferbakverkoop', albumUrl: 'https://photos.app.goo.gl/haa2SzPKDhMsruEt5', position: {lat: 51.883364, lng: 5.531067}},
+        {date: '2025-09-07', title: 'GoJapan', albumUrl: 'https://photos.app.goo.gl/7e1PAGrkiDsYjSgR8', position: {lat: 51.714717, lng: 4.883165 + 0.002}}
     ]) {
         await addEventToMap(event);
     }
@@ -194,13 +199,29 @@ window.initMap = async function () {
         color: '#0000FF'
     }, {
         files: ['src/2024-10-20 Z-ZX Club Halloweenroute.gpx'],
-        albumUrl: '',
+        albumUrl: 'https://photos.app.goo.gl/WBSydxj79piRoWWN8',
         date: '2024-10-20',
         color: '#8C0DD1'
     }, {
+        files: ['src/2025-04-11 Z-ZX Club Cas Lamens.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/CdpQE24XbUrx8Gss6',
+        date: '2025-04-12',
+    }, {
         files: ['src/2025-05-18 Z-ZX Club Limburg - Het Witte Goud.gpx'],
-        albumUrl: '',
-        date: '2025-05-18',
+        albumUrl: 'https://photos.app.goo.gl/AFMq2V8vMZjw82WR6',
+        date: '2025-05-18'
+    }, {
+        files: ['src/2025-06-28 Z-ZX Club - Groesbeek.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/pmSpqN8TS7KY5VcUA',
+        date: '2025-06-29',
+    }, {
+        files: ['src/2025-08-24 GT86 BBQ.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/qcQcTvpuThJ9iaZ2A',
+        date: '2025-08-24',
+    }, {
+        files: ['src/2025-10-17 Z-ZX Club Jubileum.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/ELhtDxuBMDEeNP5y5',
+        date: '2025-10-17',
     }]) {
         await loadGpxToGmaps(route);
     }
