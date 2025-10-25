@@ -219,9 +219,13 @@ window.initMap = async function () {
         albumUrl: 'https://photos.app.goo.gl/qcQcTvpuThJ9iaZ2A',
         date: '2025-08-24',
     }, {
-        files: ['src/2025-10-17 Z-ZX Club Jubileum.gpx'],
+        files: ['src/2025-10-17 Z-ZX Club Jubileum vrijdag 1.gpx', 'src/2025-10-17 Z-ZX Club Jubileum vrijdag 2.gpx'],
         albumUrl: 'https://photos.app.goo.gl/ELhtDxuBMDEeNP5y5',
         date: '2025-10-17',
+    }, {
+        files: ['src/2025-10-19 Z-ZX Club Jubileum zondag 1.gpx', 'src/2025-10-19 Z-ZX Club Jubileum zondag 2.gpx'],
+        albumUrl: 'https://photos.app.goo.gl/ELhtDxuBMDEeNP5y5',
+        date: '2025-10-19',
     }]) {
         await loadGpxToGmaps(route);
     }
