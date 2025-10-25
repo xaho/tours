@@ -181,7 +181,7 @@ window.initMap = async function () {
         albumUrl: 'https://photos.app.goo.gl/LKB4ZQM5Q4erVRq68',
         date: '2023-09-23'
     }, {
-        files: ['src/2024-04 Z-ZX Club Tulpenrit.gpx'],
+        files: ['src/2024-04 Z-ZX Club Tulpenrit 1.gpx', 'src/2024-04 Z-ZX Club Tulpenrit 2.gpx'],
         albumUrl: 'https://photos.app.goo.gl/sWDkWFf6RPj1Z3Ha6',
         date: '2024-04-21'
     }, {
