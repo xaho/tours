@@ -1,4 +1,7 @@
 <head>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
   <script src="src/index.js"></script>
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ&loading=async&callback=initMap"></script>
   <style>
@@ -30,6 +33,32 @@
     }
     body > #legend {
         display:none; /* Hide legend, until it is moved into the map */
+    }
+    #filters {
+      background-color: #fff;
+      border: 2px solid #fff;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+      color: rgb(25,25,25);
+      padding: 12px;
+
+      button {
+        background-color: #fff;
+        border: 2px solid #fff;
+        border-radius: 3px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.3);
+        color: rgb(25,25,25);
+        cursor: pointer;
+        font-family: Roboto,Arial,sans-serif;
+        font-size: 16px;
+        line-height: 38px;
+        padding: 0 5px;
+        text-align: 'center'  ;
+      }
+
+      #slider-range {
+        margin: 12px 0;
+      }
     }
   </style>
 </head>
