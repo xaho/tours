@@ -78,9 +78,7 @@ function generateCheckboxesForMarkers(target: HTMLElement) {
             value: markertypeKey
         });
         MarkerFilters.push(checkbox);
-        checkbox.addEventListener('change', (e) => {
-            updateVisibility();
-        });
+        checkbox.addEventListener('change', () => updateVisibility());
         row.append(checkbox, Object.assign(createElement('label'), {textContent: markertypeKey, htmlFor: checkbox.id}));
         container.append(row);
     }
@@ -104,7 +102,7 @@ function generateCheckboxesForLines(target: HTMLElement) {
             value: lineTypeKey
         });
         LineFilters.push(checkbox);
-        checkbox.addEventListener('change', (e) => updateVisibility());
+        checkbox.addEventListener('change', () => updateVisibility());
         row.append(checkbox, Object.assign(createElement('label'), {textContent: lineTypeKey, htmlFor: checkbox.id}));
         container.append(row);
     }
@@ -244,179 +242,16 @@ async function initMap() {
     );
 
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
-
-    for (const event of [
-        {
-            date: new Date('2021-10-10'),
-            title: 'JapFest',
-            albumUrl: 'https://photos.app.goo.gl/Nf712gXEFfuAWzPi6',
-            position: {lat: 52.9583015, lng: 6.5197671}
-        },
-        {
-            date: new Date('2022-07-03'),
-            title: 'Japan Classic Sunday',
-            albumUrl: 'https://photos.app.goo.gl/hugWZThwUM18fShh9',
-            position: {lat: 51.573976, lng: 5.659092}
-        },
-        {
-            date: new Date('2023-07-02'),
-            title: 'Japan Classic Sunday',
-            albumUrl: 'https://photos.app.goo.gl/rnuKLQF1ddfF7ZQWA',
-            position: {lat: 51.573976, lng: 5.661016}
-        },
-        {
-            date: new Date('2023-09-30'),
-            title: 'GoJapan',
-            albumUrl: 'https://photos.app.goo.gl/EsMhXLd7uAsB8NGx5',
-            position: {lat: 51.714717, lng: 4.883165}
-        },
-        {
-            date: new Date('2024-05-18'),
-            title: 'SPA Classic',
-            albumUrl: 'https://photos.app.goo.gl/cuPdMh7APGJ3AnSa9',
-            position: {lat: 50.442965, lng: 5.970453}
-        },
-        {
-            date: new Date('2024-07-06'),
-            title: 'CTD Summer Meet',
-            albumUrl: 'https://photos.app.goo.gl/bSw33Cv9FAUcNwR3A',
-            position: {lat: 51.638447, lng: 6.586215}
-        },
-        {
-            date: new Date('2024-07-07'),
-            title: 'Japan Classic Sunday',
-            albumUrl: 'https://photos.app.goo.gl/mQm1eXdhwBV5zMYn6',
-            position: {lat: 51.612371, lng: 4.901104}
-        },
-        {
-            date: new Date('2025-03-01'),
-            title: 'ALV',
-            albumUrl: 'https://photos.app.goo.gl/b7FLGqfXh6EjhWsU9',
-            position: {lat: 51.9416639, lng: 5.7633148}
-        },
-        {
-            date: new Date('2025-05-23'),
-            title: 'SPA Classic',
-            albumUrl: 'https://photos.app.goo.gl/Y3aFsSKgHiUAJ4A7A',
-            position: {lat: 50.442965, lng: 5.970453 + 0.002}
-        },
-        {
-            date: new Date('2025-08-30'),
-            title: 'Kofferbakverkoop',
-            albumUrl: 'https://photos.app.goo.gl/haa2SzPKDhMsruEt5',
-            position: {lat: 51.883364, lng: 5.531067}
-        },
-        {
-            date: new Date('2025-09-07'),
-            title: 'GoJapan',
-            albumUrl: 'https://photos.app.goo.gl/7e1PAGrkiDsYjSgR8',
-            position: {lat: 51.714717, lng: 4.883165 + 0.002}
-        }
-    ]) {
+    // noinspection ES6MissingAwait Promise.all became messy
+    events.forEach(async event => {
         elements.markers.push(await addEventToMap(map, {...event, type: MARKER_TYPE.EVENT}));
-    }
-    for (const route of [
-        {
-            files: ['../resources/2024-09 Z-ZX Club Noordpolderzijl - 1.gpx', '../resources/2024-09 Z-ZX Club Noordpolderzijl - 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/ufm6n9MrmAGWD7v16',
-            date: new Date('2024-09-28'),
-        }, {
-            files: ['../resources/2022-04 Z-ZX Club Bloesemrit.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/mkJi1BNcH4f6yFNS9',
-            date: new Date('2022-04-24'),
-        }, {
-            files: ['../resources/2021-08 Japrun.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/vTPYVUSa8vuRc7xD8',
-            date: new Date('2021-08-08'),
-        }, {
-            files: ['../resources/2021-07 Belgium Z Owners route 1.gpx', '../resources/2021-07 Belgium Z Owners route 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/RcRxjayz5LrttUCV9',
-            date: new Date('2021-07-10'),
-        }, {
-            files: ['../resources/2021-09-18 Z-ZX Club Funpark Meppen.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/t8RMNywBsVaNTmKQ7',
-            date: new Date('2021-09-18'),
-        }, {
-            files: ['../resources/2022-04-24 Z-ZX Club Gooi- en Vechtstreek 1.gpx', '../resources/2022-04-24 Z-ZX Club Gooi- en Vechtstreek 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/mkJi1BNcH4f6yFNS9',
-            date: new Date('2022-04-24'),
-        }, {
-            files: ['../resources/2022-06-12 Japrun.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/EzbnYyNSTbVnsMEx5',
-            date: new Date('2022-06-12',),
-            color: 'green'
-        }, {
-            files: ['../resources/2022-09 Z-ZX Club Zuid-Holland.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/J7hDeHaaavZBNfed6',
-            date: new Date('2022-09-17'),
-        }, {
-            files: ['../resources/2022-10 Z-ZX Club Coevorden.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/AY5JFeMLGgAC5qBR8',
-            date: new Date('2022-10-08'),
-        }, {
-            files: ['../resources/2023-04-25 Nurburgring.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/s9zxWwGZYqJvkUVa7',
-            date: new Date('2022-10-08'),
-        }, {
-            files: ['../resources/2023-06 Z-ZX Club Lottum.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/M9LuAb1JyFxrs6sT8',
-            date: new Date('2023-06-18'),
-        }, {
-            files: ['../resources/2023-09 Z-ZX Club kastelentocht.gpx', '../resources/2023-09 Z-ZX Club kastelentocht zondag.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/LKB4ZQM5Q4erVRq68',
-            date: new Date('2023-09-23'),
-        }, {
-            files: ['../resources/2024-04 Z-ZX Club Tulpenrit 1.gpx', '../resources/2024-04 Z-ZX Club Tulpenrit 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/sWDkWFf6RPj1Z3Ha6',
-            date: new Date('2024-04-21'),
-        }, {
-            files: ['../resources/2024-06 Dalfsen 1.gpx', '../resources/2024-06 Dalfsen 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/AWdHsYqPT63BHuyY7',
-            date: new Date('2024-06-02'),
-        }, {
-            files: ['../resources/2021-05_Z-ZX_Club_Dongen.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/WuTqfw8ZXJSZze7MA',
-            date: new Date('2021-05-15'),
-        }, {
-            files: ['../resources/2022-06_Z-ZX_Club_Kersenrit_Beneden_Leeuwen.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/8Zq268VVKrxyBMNK8',
-            date: new Date('2022-06-26'),
-            color: '#0000FF'
-        }, {
-            files: ['../resources/2024-10-20 Z-ZX Club Halloweenroute.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/WBSydxj79piRoWWN8',
-            date: new Date('2024-10-20'),
-            color: '#8C0DD1'
-        }, {
-            files: ['../resources/2025-04-11 Z-ZX Club Cas Lamens.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/CdpQE24XbUrx8Gss6',
-            date: new Date('2025-04-12'),
-        }, {
-            files: ['../resources/2025-05-18 Z-ZX Club Limburg - Het Witte Goud.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/AFMq2V8vMZjw82WR6',
-            date: new Date('2025-05-18'),
-        }, {
-            files: ['../resources/2025-06-28 Z-ZX Club - Groesbeek.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/pmSpqN8TS7KY5VcUA',
-            date: new Date('2025-06-29'),
-        }, {
-            files: ['../resources/2025-08-24 GT86 BBQ.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/qcQcTvpuThJ9iaZ2A',
-            date: new Date('2025-08-24'),
-        }, {
-            files: ['../resources/2025-10-17 Z-ZX Club Jubileum vrijdag 1.gpx', '../resources/2025-10-17 Z-ZX Club Jubileum vrijdag 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/ELhtDxuBMDEeNP5y5',
-            date: new Date('2025-10-17'),
-        }, {
-            files: ['../resources/2025-10-19 Z-ZX Club Jubileum zondag 1.gpx', '../resources/2025-10-19 Z-ZX Club Jubileum zondag 2.gpx'],
-            albumUrl: 'https://photos.app.goo.gl/ELhtDxuBMDEeNP5y5',
-            date: new Date('2025-10-19'),
-        }]) {
+    });
+    // noinspection ES6MissingAwait
+    routes.forEach(async route => {
         const {markers, lines} = await loadGpxToGmaps(map, {...route, type: LINE_TYPE.CAR});
         elements.markers.push(...markers);
         elements.lines.push(...lines);
-    }
-
+    });
     const filterDiv = createElement('div');
     filterDiv.id = 'filters';
     const yearRangeParagraph = createElement('p');
@@ -444,7 +279,7 @@ async function initMap() {
         min: minYear,
         max: maxYear,
         values: [minYear, maxYear],
-        slide: function (event, ui) {
+        slide: function (_event, ui) {
             updateAmount(ui.values?.[0] ?? 0, ui.values?.[1] ?? 0);
         }
     });
