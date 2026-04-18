@@ -22,7 +22,7 @@ async function initMap() {
         return new PinElement({
             glyphText: pitstop ? undefined : text,
             glyphColor: pitstop ? undefined : 'white',
-        }).element;
+        });
     }
 
     function createEventPin(text: string) {
@@ -31,10 +31,10 @@ async function initMap() {
             background: '#1965C4',
             glyphColor: 'white',
             borderColor: '#1965C4'
-        }).element;
+        });
     }
 
-    const map: google.maps.Map = new google.maps.Map(document.getElementById('map')!, {
+    const map = new google.maps.Map(document.getElementById('map')!, {
         zoom: 8,
         center: {lat: 52.092, lng: 5.104},
         mapTypeId: 'terrain',
@@ -43,27 +43,13 @@ async function initMap() {
 
     // Draw legend
     const legend = document.getElementById('legend')!;
-    const redPin = createRoutePin("'XX");
-    redPin.style.display = 'inline-block';
-    let div = document.createElement('div');
-    div.innerHTML = `${redPin.outerHTML}<span>Tour in the year 'XX</span>`;
-    legend.appendChild(div);
-
+    const yearPin = createRoutePin("'XX");
     const pitstopPin = createRoutePin('', true);
-    pitstopPin.style.display = 'inline-block';
-    div = document.createElement('div');
-    div.innerHTML = `${pitstopPin.outerHTML}<span>Planned stop in route</span>`;
-    legend.appendChild(div);
-
-    const bluePin = createEventPin("'XX");
-    bluePin.style.display = 'inline-block';
-    div = document.createElement('div');
-    div.innerHTML = `${bluePin.outerHTML}<span>Event in the year 'XX</span>`;
-    legend.appendChild(div);
-    div = document.createElement('div');
-    div.classList.add('legend-subtext');
-    div.innerHTML = '(Click marker to view photos)';
-    legend.appendChild(div);
+    const eventPin = createEventPin("'XX");
+    const note = document.createElement('div');
+    note.classList.add('legend-subtext');
+    note.textContent = '(Click marker to view photos)';
+    legend.append(yearPin, 'Tour in the year \'XX\'', pitstopPin, 'Planned stop in route', eventPin, 'Event in the year \'XX\'', note);
 
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
 
@@ -80,7 +66,7 @@ async function initMap() {
         } = {markers: [], lines: []};
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const path = (await parseTour(file));
+            const path = await parseTour(file);
             const polyline = new google.maps.Polyline({
                 path,
                 geodesic: true,
@@ -88,7 +74,7 @@ async function initMap() {
                 strokeOpacity: .6,
                 strokeWeight: 3,
             });
-            elements.lines.push({element: polyline, date: date, type});
+            elements.lines.push({element: polyline, date, type});
             polyline.setMap(map);
             polyline.set('originalColor', color);
             google.maps.event.addListener(polyline, 'mouseover', () => {
@@ -97,13 +83,13 @@ async function initMap() {
             google.maps.event.addListener(polyline, 'mouseout', () => {
                 polyline.setOptions({strokeColor: polyline.get('originalColor'), zIndex: 0, strokeOpacity: .6});
             });
-            const markerContent = createRoutePin("'" + (new Date(date).getFullYear() - 2000), i > 0);
-            markerContent.onmouseenter = function (event: MouseEvent) {
+            const markerContent = createRoutePin(`'${date.getFullYear() - 2000}`, i > 0);
+            markerContent.onmouseenter = function (event) {
                 polyline.setOptions({strokeColor: '#1493FF', zIndex: 1, strokeOpacity: 1});
                 event.stopPropagation();
                 event.preventDefault();
             };
-            markerContent.onmouseleave = function (event: MouseEvent) {
+            markerContent.onmouseleave = function (event) {
                 polyline.setOptions({strokeColor: polyline.get('originalColor'), zIndex: 0, strokeOpacity: .6});
                 event.stopPropagation();
                 event.preventDefault();
@@ -117,9 +103,9 @@ async function initMap() {
                 zIndex: 1 - i
             });
             if (albumUrl) {
-                marker.addListener('click', () => window.open(albumUrl, '_blank'));
+                marker.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
             }
-            elements.markers.push({element: marker, date: new Date(date), type});
+            elements.markers.push({element: marker, date, type});
         }
         return elements;
     }
@@ -135,13 +121,13 @@ async function initMap() {
             map,
             position,
             title,
-            content: createEventPin("'" + (new Date(date).getFullYear() - 2000))
+            content: createEventPin(`'${date.getFullYear() - 2000}`)
         });
 
         if (albumUrl) {
-            marker.addListener('click', () => window.open(albumUrl, '_blank'));
+            marker.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
         }
-        return {element: marker, date: date, type};
+        return {element: marker, date, type};
     }
 
     for (const event of [
