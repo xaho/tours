@@ -32,6 +32,12 @@ const elements: {
     lines: { element: google.maps.Polyline, date: Date, type: LINE_TYPE }[]
 } = {markers: [], lines: []};
 
+function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, style: Partial<CSSStyleDeclaration> = {}) {
+    const element = document.createElement(tag);
+    Object.assign(element.style, style);
+    return element;
+}
+
 async function parseTour(url: string) {
     const routeXml = await (await fetch(url)).text();
     const parser = new DOMParser();
@@ -107,7 +113,8 @@ function createButton() {
             textContent: 'Center Map',
             title: 'Click to recenter the map',
         });
-    controlButton.addEventListener('click', () => {});
+    controlButton.addEventListener('click', () => {
+    });
     return controlButton;
 }
 
@@ -216,13 +223,19 @@ async function initMap() {
 
     // Draw legend
     const legend = document.getElementById('legend')!;
-    const yearPin = createRoutePin("'XX");
-    const pitstopPin = createRoutePin('', true);
-    const eventPin = createEventPin("'XX");
     const note = document.createElement('div');
     note.classList.add('legend-subtext');
     note.textContent = '(Click marker to view photos)';
-    legend.append(yearPin, 'Tour in the year \'XX\'', pitstopPin, 'Planned stop in route', eventPin, 'Event in the year \'XX\'', note);
+    legend.append(
+        createRoutePin("'XX"),
+        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Pitstop in route'}),
+        createElement('div'),
+        createRoutePin('', true),
+        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Planned stop in route'}),
+        createElement('div'),
+        createEventPin("'XX"),
+        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Event in the year \'XX\''}),
+        note);
 
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
 
