@@ -63,13 +63,15 @@ function updateVisibility() {
 }
 
 function generateCheckboxesForMarkers(target: HTMLElement) {
-    const container = document.createElement('div');
-    const header = document.createElement('h1');
+    const container = createElement('div');
+    const header = createElement('h1');
     header.textContent = 'Markers';
     container.append(header);
-    for (let markertypeKey of Object.values(MARKER_TYPE)) {
-        const row = document.createElement('div');
-        const checkbox = Object.assign(document.createElement('input'), {
+
+    for (let markertypeKey of elements.markers.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
+        const row = Object.assign(createElement('div'), {classList: 'checkbox-row',});
+        const checkbox = Object.assign(createElement('input'), {
+            id: `${markertypeKey}-checkbox`,
             type: 'checkbox',
             checked: true,
             name: markertypeKey,
@@ -79,20 +81,23 @@ function generateCheckboxesForMarkers(target: HTMLElement) {
         checkbox.addEventListener('change', (e) => {
             updateVisibility();
         });
-        row.append(checkbox, markertypeKey);
+        row.append(checkbox, Object.assign(createElement('label'), {textContent: markertypeKey, htmlFor: checkbox.id}));
         container.append(row);
     }
     target.append(container);
 }
 
 function generateCheckboxesForLines(target: HTMLElement) {
-    const container = document.createElement('div');
-    const header = document.createElement('h1');
+    const container = createElement('div');
+    const header = createElement('h1');
     header.textContent = 'Routes';
     container.append(header);
-    for (let lineTypeKey of Object.values(LINE_TYPE)) {
-        const row = document.createElement('div');
-        const checkbox = Object.assign(document.createElement('input'), {
+    for (let lineTypeKey of elements.lines.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
+        const row = Object.assign(createElement('div'), {
+            classList: 'checkbox-row',
+        });
+        const checkbox = Object.assign(createElement('input'), {
+            id: `${lineTypeKey}-checkbox`,
             type: 'checkbox',
             checked: true,
             name: lineTypeKey,
@@ -100,7 +105,7 @@ function generateCheckboxesForLines(target: HTMLElement) {
         });
         LineFilters.push(checkbox);
         checkbox.addEventListener('change', (e) => updateVisibility());
-        row.append(checkbox, lineTypeKey);
+        row.append(checkbox, Object.assign(createElement('label'), {textContent: lineTypeKey, htmlFor: checkbox.id}));
         container.append(row);
     }
     target.append(container);
@@ -108,7 +113,7 @@ function generateCheckboxesForLines(target: HTMLElement) {
 
 function createButton() {
     const controlButton = Object.assign(
-        document.createElement('button'),
+        createElement('button'),
         {
             textContent: 'Center Map',
             title: 'Click to recenter the map',
@@ -223,7 +228,7 @@ async function initMap() {
 
     // Draw legend
     const legend = document.getElementById('legend')!;
-    const note = document.createElement('div');
+    const note = createElement('div');
     note.classList.add('legend-subtext');
     note.textContent = '(Click marker to view photos)';
     legend.append(
@@ -235,7 +240,8 @@ async function initMap() {
         createElement('div'),
         createEventPin("'XX"),
         Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Event in the year \'XX\''}),
-        note);
+        note
+    );
 
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
 
@@ -411,13 +417,13 @@ async function initMap() {
         elements.lines.push(...lines);
     }
 
-    const filterDiv = document.createElement('div');
+    const filterDiv = createElement('div');
     filterDiv.id = 'filters';
-    const yearRangeParagraph = document.createElement('p');
+    const yearRangeParagraph = createElement('p');
     yearRangeParagraph.id = 'amount';
-    const yearHeader = document.createElement('h1');
+    const yearHeader = createElement('h1');
     yearHeader.textContent = 'Year';
-    const slider = document.createElement('div');
+    const slider = createElement('div');
     slider.id = 'slider-range';
 
     filterDiv.append(yearHeader, yearRangeParagraph, slider);

@@ -1,79 +1,93 @@
 <head>
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-  <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-  <script src="dist/index.js"></script>
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ&loading=async&callback=initMap"></script>
-  <style>
-    #map {
-      flex: 1;
-    }
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script src="dist/index.js"></script>
+    <script async
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ&loading=async&callback=initMap"></script>
+    <style>
+        #map {
+            flex: 1;
+        }
 
-    body {
-      display: flex;
-      flex-direction: row;
-      height: 100%;
-      margin: 0;
-    }
-    #legend {
-      background: #fff;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 2px;
-      box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
+        body {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            margin: 0;
+        }
 
-      .GMAMP-maps-pin-view {
-        vertical-align: middle;
-      }
+        #legend {
+            background: #fff;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 2px;
+            box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
 
-      > div > span {
-        margin-left: 12px;
-      }
+            .GMAMP-maps-pin-view {
+                vertical-align: middle;
+            }
 
-      > .legend-subtext {
-        margin-top: 10px;
-      }
+            > div > span {
+                margin-left: 12px;
+            }
 
-      > gmp-pin {
-        display: inline-grid !important;
-      }
-    }
-    body > #legend {
-        display:none; /* Hide legend, until it is moved into the map */
-    }
-    #filters {
-      background-color: #fff;
-      border: 2px solid #fff;
-      border-radius: 3px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.3);
-      color: rgb(25,25,25);
-      padding: 12px;
+            > .legend-subtext {
+                margin-top: 10px;
+            }
 
-      button {
-        background-color: #fff;
-        border: 2px solid #fff;
-        border-radius: 3px;
-        box-shadow: 0 2px 6px rgba(0,0,0,.3);
-        color: rgb(25,25,25);
-        cursor: pointer;
-        font-family: Roboto,Arial,sans-serif;
-        font-size: 16px;
-        line-height: 38px;
-        padding: 0 5px;
-        text-align: 'center'  ;
-      }
-      h1 {
-        font-size: 14px;
-      }
+            > gmp-pin {
+                display: inline-grid !important;
+            }
+        }
 
-      #slider-range {
-        margin: 12px 0;
-      }
-    }
-  </style>
+        body > #legend {
+            display: none; /* Hide legend, until it is moved into the map */
+        }
+
+        #filters {
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+            color: rgb(25, 25, 25);
+            padding: 12px;
+
+            button {
+                background-color: #fff;
+                border: 2px solid #fff;
+                border-radius: 3px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+                color: rgb(25, 25, 25);
+                cursor: pointer;
+                font-family: Roboto, Arial, sans-serif;
+                font-size: 16px;
+                line-height: 38px;
+                padding: 0 5px;
+                text-align: 'center';
+            }
+
+            .checkbox-row {
+                display: flex;
+                align-items: center;
+
+                > label {
+                    user-select: none;
+                }
+            }
+
+            h1 {
+                font-size: 14px;
+            }
+
+            #slider-range {
+                margin: 12px 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
-  <div id="map"></div>
-  <div id="legend"></div>
+<div id="map"></div>
+<div id="legend"></div>
 </body>
