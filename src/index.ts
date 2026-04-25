@@ -217,12 +217,7 @@ async function loadGpxToGmaps(map: google.maps.Map, {files, albumUrl, date, type
 async function initMap() {
     ({AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker'));
 
-    const map = new google.maps.Map(document.getElementById('map')!, {
-        zoom: 8,
-        center: {lat: 52.092, lng: 5.104},
-        mapTypeId: 'terrain',
-        mapId: '4504f8b37365c3d0'
-    });
+    const map = new google.maps.Map(document.getElementById('map')!, config.map);
 
     // Draw legend
     const legend = document.getElementById('legend')!;
