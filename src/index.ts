@@ -218,25 +218,8 @@ async function initMap() {
     ({AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker'));
 
     const map = new google.maps.Map(document.getElementById('map')!, config.map);
+    window.dispatchEvent(new CustomEvent<{map: google.maps.Map}>('map-loaded', {detail: {map}}))
 
-    // Draw legend
-    const legend = document.getElementById('legend')!;
-    const note = createElement('div');
-    note.classList.add('legend-subtext');
-    note.textContent = '(Click marker to view photos)';
-    legend.append(
-        createRoutePin("'XX"),
-        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Pitstop in route'}),
-        createElement('div'),
-        createRoutePin('', true),
-        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Planned stop in route'}),
-        createElement('div'),
-        createEventPin("'XX"),
-        Object.assign(createElement('span', {marginLeft: '12px'}), {textContent: 'Event in the year \'XX\''}),
-        note
-    );
-
-    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
     // noinspection ES6MissingAwait Promise.all became messy
     events.forEach(async event => {
         elements.markers.push(await addEventToMap(map, {...event, type: MARKER_TYPE.EVENT}));
