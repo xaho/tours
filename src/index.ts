@@ -66,7 +66,7 @@ function generateCheckboxesForMarkers(target: HTMLElement) {
     const container = createElement('div');
     const header = createElement('h1');
     header.textContent = 'Markers';
-    container.append(header);
+    if (elements.markers.length > 0) container.append(header);
 
     for (let markertypeKey of elements.markers.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
         const row = Object.assign(createElement('div'), {classList: 'checkbox-row',});
@@ -89,7 +89,7 @@ function generateCheckboxesForLines(target: HTMLElement) {
     const container = createElement('div');
     const header = createElement('h1');
     header.textContent = 'Routes';
-    container.append(header);
+    if (elements.lines.length > 0) container.append(header);
     for (let lineTypeKey of elements.lines.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
         const row = Object.assign(createElement('div'), {
             classList: 'checkbox-row',
