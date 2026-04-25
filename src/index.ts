@@ -159,7 +159,7 @@ function createEventPin(text: string) {
 
 async function loadGpxToGmaps(map: google.maps.Map, {files, albumUrl, date, type = LINE_TYPE.CAR, color = '#FF0000'}: {
     files: string[],
-    albumUrl: string,
+    albumUrl?: string,
     date: Date,
     type: LINE_TYPE,
     color?: string
