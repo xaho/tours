@@ -124,7 +124,7 @@ function createButton() {
 async function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type}: {
     title: string,
     date: Date,
-    albumUrl: string,
+    albumUrl?: string,
     position: { lat: number, lng: number },
     type: MARKER_TYPE
 }) {
