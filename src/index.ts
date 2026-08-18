@@ -2,133 +2,89 @@
 /// <reference types="@types/jquery" />
 /// <reference types="@types/jqueryui" />
 
-enum MARKER_TYPE {
-    HOTEL = 'Hotel',
-    POI = 'Point of interest',
-    EVENT = 'Event',
-    ROUTE_START = 'Route start'
-}
-
-enum LINE_TYPE {
-    CAR = 'Car',
-    TRAIN = 'Train',
-    BUS = 'Bus',
-    FERRY = 'Ferry'
-}
-
-type MarkerType = 'hotel' | 'POI' | 'event' | 'RouteStart';
-type LineType = 'car' | 'train' | 'bus' | 'ferry';
-
 let AdvancedMarkerElement: typeof google.maps.marker.AdvancedMarkerElement;
 let PinElement: typeof google.maps.marker.PinElement;
 
-const MarkerFilters: HTMLInputElement[] = [];
-const LineFilters: HTMLInputElement[] = [];
+const TagFilters: { element: HTMLInputElement, tag: string, namespace: string }[] = [];
 let minYear = 2016;
 let maxYear = 2026;
 
 const elements: {
-    markers: { element: HTMLElement, date: Date, type: MARKER_TYPE }[],
-    lines: { element: google.maps.Polyline, date: Date, type: LINE_TYPE }[]
+    markers: { element: HTMLElement, date: Date, type?: string, tags?: { namespace: string, tag: string }[] }[],
+    lines: { element: google.maps.Polyline, date: Date, tags?: { namespace: string, tag: string }[] }[]
 } = {markers: [], lines: []};
 
-function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, style: Partial<CSSStyleDeclaration> = {}) {
+function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: Partial<HTMLElementTagNameMap[K]> & {
+    styles?: Partial<CSSStyleDeclaration>,
+    classlist?: string[]
+} = {}) {
     const element = document.createElement(tag);
-    Object.assign(element.style, style);
+    Object.assign(element, options, {style: options.styles});
+    if (options.classlist) element.classList.add(...options.classlist);
     return element;
 }
 
-async function parseTour(url: string) {
+async function parseTour(url: string): Promise<{ lng: number, lat: number }[]> {
     const routeXml = await (await fetch(url)).text();
     const parser = new DOMParser();
     const route = parser.parseFromString(routeXml, 'text/xml');
-    return Array.from(route.querySelectorAll('trk > trkseg > trkpt')).map(point => {
-        return {lng: +point.getAttribute('lon')!, lat: +point.getAttribute('lat')!};
-    });
+    return Array.from(route.querySelectorAll('trk > trkseg > trkpt')).map(point => ({
+        lng: +point.getAttribute('lon')!,
+        lat: +point.getAttribute('lat')!
+    }));
 }
 
-function updateVisibility() {
+function updateVisibility(): void {
     for (const marker of elements.markers) {
         let visible = true;
         if (marker.date.getFullYear() < minYear || marker.date.getFullYear() > maxYear) visible = false;
-        else if (MarkerFilters.some(f => f.name === marker.type && !f.checked)) visible = false;
+        else if (marker.tags?.some(t => TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
+        // if one of the marker's tags is not checked, hide the marker
         marker.element.style.visibility = visible ? 'visible' : 'hidden';
     }
     for (const line of elements.lines) {
         let visible = true;
         if (line.date.getFullYear() < minYear || line.date.getFullYear() > maxYear) visible = false;
-        else if (LineFilters.some(f => f.name === line.type && !f.checked)) visible = false;
+        else if (line.tags?.some(t => TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
+
         line.element.setVisible(visible);
     }
 }
 
-function generateCheckboxesForMarkers(target: HTMLElement) {
-    const container = createElement('div');
-    const header = createElement('h1');
-    header.textContent = 'Markers';
-    if (elements.markers.length > 0) container.append(header);
-
-    for (let markertypeKey of elements.markers.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
-        const row = Object.assign(createElement('div'), {classList: 'checkbox-row',});
-        const checkbox = Object.assign(createElement('input'), {
-            id: `${markertypeKey}-checkbox`,
-            type: 'checkbox',
-            checked: true,
-            name: markertypeKey,
-            value: markertypeKey
-        });
-        MarkerFilters.push(checkbox);
-        checkbox.addEventListener('change', () => updateVisibility());
-        row.append(checkbox, Object.assign(createElement('label'), {textContent: markertypeKey, htmlFor: checkbox.id}));
-        container.append(row);
+function generateCheckboxesForFilters(): HTMLElement[] {
+    let elements = [];
+    for (let filter of config.filters) {
+        const container = createElement('div');
+        const header = createElement('h1', {textContent: filter.namespace});
+        container.append(header)
+        for (let tag of filter.tags) {
+            const row = createElement('div', {classlist: ['checkbox-row']});
+            const checkbox = createElement('input', {
+                id: `${tag}-checkbox`,
+                type: 'checkbox',
+                checked: true,
+                name: tag,
+                value: tag
+            });
+            TagFilters.push({element: checkbox, tag, namespace: filter.namespace});
+            checkbox.addEventListener('change', () => updateVisibility());
+            row.append(checkbox, createElement('label', {textContent: tag, htmlFor: checkbox.id}));
+            container.append(row);
+        }
+        elements.push(container);
     }
-    target.append(container);
+    return elements;
 }
 
-function generateCheckboxesForLines(target: HTMLElement) {
-    const container = createElement('div');
-    const header = createElement('h1');
-    header.textContent = 'Routes';
-    if (elements.lines.length > 0) container.append(header);
-    for (let lineTypeKey of elements.lines.reduce((acc, marker) => acc.add(marker.type), new Set<string>())) {
-        const row = Object.assign(createElement('div'), {
-            classList: 'checkbox-row',
-        });
-        const checkbox = Object.assign(createElement('input'), {
-            id: `${lineTypeKey}-checkbox`,
-            type: 'checkbox',
-            checked: true,
-            name: lineTypeKey,
-            value: lineTypeKey
-        });
-        LineFilters.push(checkbox);
-        checkbox.addEventListener('change', () => updateVisibility());
-        row.append(checkbox, Object.assign(createElement('label'), {textContent: lineTypeKey, htmlFor: checkbox.id}));
-        container.append(row);
-    }
-    target.append(container);
-}
-
-function createButton() {
-    const controlButton = Object.assign(
-        createElement('button'),
-        {
-            textContent: 'Center Map',
-            title: 'Click to recenter the map',
-        });
-    controlButton.addEventListener('click', () => {
-    });
-    return controlButton;
-}
-
-async function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type}: {
+async function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type, tags}: {
     title: string,
     date: Date,
     albumUrl?: string,
     position: { lat: number, lng: number },
-    type: MARKER_TYPE
+    type?: string,
+    tags?: { namespace: string, tag: string }[]
 }) {
-    const marker = new AdvancedMarkerElement({
+    const element = new AdvancedMarkerElement({
         map,
         position,
         title,
@@ -136,12 +92,12 @@ async function addEventToMap(map: google.maps.Map, {title, date, albumUrl, posit
     });
 
     if (albumUrl) {
-        marker.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
+        element.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
     }
-    return {element: marker, date, type};
+    return {element, date, type, tags};
 }
 
-function createRoutePin(text: string, pitstop = false) {
+function createRoutePin(text: string, pitstop = false): google.maps.marker.PinElement {
     return new PinElement({
         glyphText: pitstop ? undefined : text,
         glyphColor: pitstop ? undefined : 'white',
@@ -157,19 +113,18 @@ function createEventPin(text: string) {
     });
 }
 
-async function loadGpxToGmaps(map: google.maps.Map, {files, albumUrl, date, type = LINE_TYPE.CAR, color = '#FF0000'}: {
-    files: string[],
+async function loadGpxToGmaps(map: google.maps.Map, {segments, albumUrl, date, color = '#FF0000'}: {
+    segments: { file: string, tags?: { namespace: string, tag: string }[], color?: string }[],
     albumUrl?: string,
     date: Date,
-    type: LINE_TYPE,
     color?: string
 }) {
     const elements: {
-        markers: { element: HTMLElement, date: Date, type: MARKER_TYPE }[],
-        lines: { element: google.maps.Polyline, date: Date, type: LINE_TYPE }[]
+        markers: { element: HTMLElement, date: Date, type: string, tags: { namespace: string, tag: string }[] }[],
+        lines: { element: google.maps.Polyline, date: Date, tags: { namespace: string, tag: string }[] }[]
     } = {markers: [], lines: []};
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+    for (let i = 0; i < segments.length; i++) {
+        const {file, tags} = segments[i];
         const path = await parseTour(file);
         const polyline = new google.maps.Polyline({
             path,
@@ -178,7 +133,11 @@ async function loadGpxToGmaps(map: google.maps.Map, {files, albumUrl, date, type
             strokeOpacity: .6,
             strokeWeight: 3,
         });
-        elements.lines.push({element: polyline, date, type});
+        elements.lines.push({
+            element: polyline,
+            date,
+            tags: [...(tags ?? [{namespace: 'Markers', tag: MARKER_TYPE.ROUTE}]), ]
+        });
         polyline.setMap(map);
         polyline.set('originalColor', color);
         google.maps.event.addListener(polyline, 'mouseover', () => {
@@ -209,7 +168,12 @@ async function loadGpxToGmaps(map: google.maps.Map, {files, albumUrl, date, type
         if (albumUrl) {
             marker.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
         }
-        elements.markers.push({element: marker, date, type: MARKER_TYPE.ROUTE_START});
+        elements.markers.push({
+            element: marker,
+            date,
+            type: MARKER_TYPE.ROUTE_START,
+            tags: [...(tags ?? []), {namespace: 'Markers', tag: i === 0 ? MARKER_TYPE.ROUTE_START : MARKER_TYPE.PITSTOP}]
+        });
     }
     return elements;
 }
@@ -218,30 +182,24 @@ async function initMap() {
     ({AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker'));
 
     const map = new google.maps.Map(document.getElementById('map')!, config.map);
-    window.dispatchEvent(new CustomEvent<{map: google.maps.Map}>('map-loaded', {detail: {map}}))
+    window.dispatchEvent(new CustomEvent<{ map: google.maps.Map }>('map-loaded', {detail: {map}}));
 
     // noinspection ES6MissingAwait Promise.all became messy
     events.forEach(async event => {
-        elements.markers.push(await addEventToMap(map, {...event, type: MARKER_TYPE.EVENT}));
+        elements.markers.push(await addEventToMap(map, event));
     });
     // noinspection ES6MissingAwait
     routes.forEach(async route => {
-        const {markers, lines} = await loadGpxToGmaps(map, {...route, type: LINE_TYPE.CAR});
+        const {markers, lines} = await loadGpxToGmaps(map, route);
         elements.markers.push(...markers);
         elements.lines.push(...lines);
     });
-    const filterDiv = createElement('div');
-    filterDiv.id = 'filters';
-    const yearRangeParagraph = createElement('p');
-    yearRangeParagraph.id = 'amount';
-    const yearHeader = createElement('h1');
-    yearHeader.textContent = 'Year';
-    const slider = createElement('div');
-    slider.id = 'slider-range';
+    const filterDiv = createElement('div', {id: 'filters'});
+    const yearRangeParagraph = createElement('p', {id: 'amount'});
+    const yearHeader = createElement('h1', {textContent: 'Year'});
+    const slider = createElement('div', {id: 'slider-range'});
 
-    filterDiv.append(yearHeader, yearRangeParagraph, slider);
-    generateCheckboxesForLines(filterDiv);
-    generateCheckboxesForMarkers(filterDiv);
+    filterDiv.append(yearHeader, yearRangeParagraph, slider, ...generateCheckboxesForFilters());
 
     map.controls[google.maps.ControlPosition.LEFT_CENTER].push(filterDiv);
 
