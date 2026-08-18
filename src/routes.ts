@@ -129,7 +129,7 @@ const routes: Route[] = [
     }].map((r: Route) => {
     r.segments.map((s, i) => {
         const defaultRouteTags = [
-            {namespace: 'Markers', tag: MARKER_TYPE.ROUTE},
+            {namespace: 'Marker', tag: MARKER_TYPE.ROUTE},
             {namespace: 'Transport', tag: TRANSPORT_TYPE.CAR},
         ];
         s.tags ??= [...r.tags ?? [], ...defaultRouteTags];

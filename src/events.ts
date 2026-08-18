@@ -65,6 +65,9 @@ const events: {
         position: {lat: 51.714717, lng: 4.883165 + 0.002}
     }
 ].map(e => {
-    Object.assign(e, {tags: [...(e.tags ?? []), {namespace: 'Method of transport', tag: TRANSPORT_TYPE.CAR}]});
+    e.tags = [...(e.tags ?? []),
+        {namespace: 'Transport', tag: TRANSPORT_TYPE.CAR},
+        {namespace: 'Marker', tag: MARKER_TYPE.EVENT},
+    ];
     return e;
 });

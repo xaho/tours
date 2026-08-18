@@ -53,10 +53,19 @@ function updateVisibility(): void {
 
 function generateCheckboxesForFilters(): HTMLElement[] {
     let elements = [];
-    for (let filter of config.filters) {
+    let namespaces = [
+        ...events.flatMap(e => e.tags ?? []),
+        ...routes.flatMap(r => r.segments.flatMap(s => s.tags ?? [])),
+        ...routes.flatMap(r => r.tags ?? [])
+    ].reduce((prev, cur) => {
+        prev[cur.namespace] ??= prev[cur.namespace] ?? {tags: new Set()};
+        prev[cur.namespace].tags.add(cur.tag);
+        return prev;
+    }, {} as { [namespace: string]: { tags: Set<string>}});
+    for (let namespace in namespaces) {
+        let filter = {namespace, tags: namespaces[namespace].tags};
         const container = createElement('div');
-        const header = createElement('h1', {textContent: filter.namespace});
-        container.append(header)
+        container.append(createElement('h1', {textContent: filter.namespace}));
         for (let tag of filter.tags) {
             const row = createElement('div', {classlist: ['checkbox-row']});
             const checkbox = createElement('input', {
