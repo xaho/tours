@@ -178,7 +178,7 @@ function createEventPin(text: string) {
     });
 }
 
-function loadGpxToGmaps(map: google.maps.Map, route: Route & {color?: string}): {markers: Marker[], lines: Line[]} {
+function loadGpxToGmaps(map: google.maps.Map, route: Route & { color?: string }): { markers: Marker[], lines: Line[] } {
     const {segments, albumUrl, date, title, color = '#FF0000'} = route;
     const elements: {
         markers: Marker[],
@@ -275,3 +275,10 @@ async function initMap(): Promise<void> {
     });
     setSlider(config.filters.minYear, config.filters.maxYear);
 }
+
+document.head.append(
+    createElement('script', {
+        src: `https://maps.googleapis.com/maps/api/js?key=${config.map.key}&loading=async&callback=${initMap.name}`,
+        defer: true
+    })
+);

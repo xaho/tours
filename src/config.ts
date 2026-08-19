@@ -1,5 +1,3 @@
-
-
 enum MARKER_TYPE {
     HOTEL = 'Hotel',
     POI = 'Point of interest',
@@ -21,7 +19,8 @@ const config = {
         zoom: 8,
         center: {lat: 52.092, lng: 5.104},
         mapTypeId: 'terrain',
-        mapId: '4504f8b37365c3d0'
+        mapId: '4504f8b37365c3d0',
+        key: 'AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ'
     },
     filters: {
         minYear: 2016,
