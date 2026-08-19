@@ -8,14 +8,52 @@ let PinElement: typeof google.maps.marker.PinElement;
 const TagFilters: { element: HTMLInputElement, tag: string, namespace: string }[] = [];
 const yearRangeParagraph = createElement('p', {id: 'year-range-amount'});
 let yearRangeSlider: JQuery;
-const minYear = 2016;
-let minYearValue = minYear;
-const maxYear = 2026;
-let maxYearValue = maxYear;
+let routes: Route[] = [];
+let minYearValue = config.filters.minYear;
+let maxYearValue = config.filters.maxYear;
+
+type Tag = { namespace: string, tag: string };
+
+type Route = {
+    date: Date,
+    title: string,
+    tags?: Tag[],
+    segments: RouteSegment[],
+    albumUrl?: string;
+    color?: string
+};
+
+type RouteSegment = {
+    path: Point[],
+    tags?: Tag[],
+}
+
+type Point = { lat: number, lng: number };
+
+type TravelEvent = {
+    date: Date;
+    tags?: Tag[],
+    title: string;
+    albumUrl: string;
+    position: { lat: number; lng: number }
+}
+
+type Marker = {
+    element: google.maps.marker.AdvancedMarkerElement,
+    date: Date,
+    type?: string,
+    tags?: Tag[]
+};
+
+type Line = {
+    element: google.maps.Polyline,
+    date: Date,
+    tags?: Tag[]
+}
 
 const elements: {
-    markers: { element: HTMLElement, date: Date, type?: string, tags?: { namespace: string, tag: string }[] }[],
-    lines: { element: google.maps.Polyline, date: Date, tags?: { namespace: string, tag: string }[] }[]
+    markers: Marker[],
+    lines: Line[]
 } = {markers: [], lines: []};
 
 function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: Partial<HTMLElementTagNameMap[K]> & {
@@ -28,7 +66,7 @@ function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: P
     return element;
 }
 
-async function parseTour(url: string): Promise<{ lng: number, lat: number }[]> {
+async function parseGPXFromUrl(url: string): Promise<{ lng: number, lat: number }[]> {
     const routeXml = await (await fetch(url)).text();
     const parser = new DOMParser();
     const route = parser.parseFromString(routeXml, 'text/xml');
@@ -63,9 +101,9 @@ function updateVisibility(): void {
 }
 
 function resetFilters() {
-    TagFilters.forEach(f => f.element.checked = true);
-    yearRangeSlider.slider( "values", [ minYear, maxYear] );
-    setSlider(minYear, maxYear);
+    for (const f of TagFilters) f.element.checked = true;
+    yearRangeSlider.slider("values", [config.filters.minYear, config.filters.maxYear]);
+    setSlider(config.filters.minYear, config.filters.maxYear);
 }
 
 function generateCheckboxesForFilters(): HTMLElement[] {
@@ -78,7 +116,7 @@ function generateCheckboxesForFilters(): HTMLElement[] {
         prev[cur.namespace] ??= prev[cur.namespace] ?? {tags: new Set()};
         prev[cur.namespace].tags.add(cur.tag);
         return prev;
-    }, {} as { [namespace: string]: { tags: Set<string>}});
+    }, {} as { [namespace: string]: { tags: Set<string> } });
     for (let namespace in namespaces) {
         let filter = {namespace, tags: namespaces[namespace].tags};
         const container = createElement('div');
@@ -103,7 +141,7 @@ function generateCheckboxesForFilters(): HTMLElement[] {
     return elements;
 }
 
-async function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type, tags}: {
+function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type, tags}: {
     title: string,
     date: Date,
     albumUrl?: string,
@@ -140,19 +178,14 @@ function createEventPin(text: string) {
     });
 }
 
-async function loadGpxToGmaps(map: google.maps.Map, {segments, albumUrl, date, color = '#FF0000'}: {
-    segments: { file: string, tags?: { namespace: string, tag: string }[], color?: string }[],
-    albumUrl?: string,
-    date: Date,
-    color?: string
-}) {
+function loadGpxToGmaps(map: google.maps.Map, route: Route & {color?: string}): {markers: Marker[], lines: Line[]} {
+    const {segments, albumUrl, date, title, color = '#FF0000'} = route;
     const elements: {
-        markers: { element: HTMLElement, date: Date, type: string, tags: { namespace: string, tag: string }[] }[],
-        lines: { element: google.maps.Polyline, date: Date, tags: { namespace: string, tag: string }[] }[]
+        markers: Marker[],
+        lines: Line[]
     } = {markers: [], lines: []};
     for (let i = 0; i < segments.length; i++) {
-        const {file, tags} = segments[i];
-        const path = await parseTour(file);
+        const {path, tags} = segments[i];
         const polyline = new google.maps.Polyline({
             path,
             geodesic: true,
@@ -163,7 +196,7 @@ async function loadGpxToGmaps(map: google.maps.Map, {segments, albumUrl, date, c
         elements.lines.push({
             element: polyline,
             date,
-            tags: [...(tags ?? [{namespace: 'Markers', tag: MARKER_TYPE.ROUTE}]), ]
+            tags: [...(tags ?? [{namespace: 'Markers', tag: MARKER_TYPE.ROUTE}]),]
         });
         polyline.setMap(map);
         polyline.set('originalColor', color);
@@ -187,7 +220,7 @@ async function loadGpxToGmaps(map: google.maps.Map, {segments, albumUrl, date, c
         const marker = new AdvancedMarkerElement({
             map,
             position: path[0],
-            title: /..\/resources\/(?<tourname>.*)\.gpx/.exec(file)?.groups?.tourname,
+            title,
             content: markerContent,
             gmpClickable: !!albumUrl,
             zIndex: 1 - i
@@ -199,28 +232,30 @@ async function loadGpxToGmaps(map: google.maps.Map, {segments, albumUrl, date, c
             element: marker,
             date,
             type: MARKER_TYPE.ROUTE_START,
-            tags: [...(tags ?? []), {namespace: 'Markers', tag: i === 0 ? MARKER_TYPE.ROUTE_START : MARKER_TYPE.PITSTOP}]
+            tags: [...(tags ?? []), {
+                namespace: 'Markers',
+                tag: i === 0 ? MARKER_TYPE.ROUTE_START : MARKER_TYPE.PITSTOP
+            }]
         });
     }
     return elements;
 }
 
-async function initMap() {
+async function initMap(): Promise<void> {
     ({AdvancedMarkerElement, PinElement} = await google.maps.importLibrary('marker'));
 
     const map = new google.maps.Map(document.getElementById('map')!, config.map);
     window.dispatchEvent(new CustomEvent<{ map: google.maps.Map }>('map-loaded', {detail: {map}}));
 
-    // noinspection ES6MissingAwait Promise.all became messy
-    events.forEach(async event => {
-        elements.markers.push(await addEventToMap(map, event));
-    });
-    // noinspection ES6MissingAwait
-    routes.forEach(async route => {
-        const {markers, lines} = await loadGpxToGmaps(map, route);
+    for (const event of events) {
+        elements.markers.push(addEventToMap(map, event));
+    }
+    routes = await getRoutes();
+    for (const route of routes) {
+        const {markers, lines} = loadGpxToGmaps(map, route);
         elements.markers.push(...markers);
         elements.lines.push(...lines);
-    });
+    }
     const filterDiv = createElement('div', {id: 'filters'});
     const yearHeader = createElement('h1', {textContent: 'Year'});
     const sliderDiv = createElement('div', {id: 'slider-range'});
@@ -231,12 +266,12 @@ async function initMap() {
 
     yearRangeSlider = $(sliderDiv).slider({
         range: true,
-        min: minYear,
-        max: maxYear,
-        values: [minYear, maxYear],
+        min: config.filters.minYear,
+        max: config.filters.maxYear,
+        values: [config.filters.minYear, config.filters.maxYear],
         slide: function (_event, ui) {
             setSlider(ui.values?.[0] ?? 0, ui.values?.[1] ?? 0);
         }
     });
-    setSlider(minYear, maxYear);
+    setSlider(config.filters.minYear, config.filters.maxYear);
 }

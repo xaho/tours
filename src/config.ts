@@ -1,10 +1,4 @@
-type Route = {
-    tags?: { namespace: string, tag: string }[],
-    segments: { file: string, tags?: { namespace: string, tag: string }[] }[],
-    albumUrl?: string;
-    date: Date,
-    color?: string
-};
+
 
 enum MARKER_TYPE {
     HOTEL = 'Hotel',
@@ -28,6 +22,10 @@ const config = {
         center: {lat: 52.092, lng: 5.104},
         mapTypeId: 'terrain',
         mapId: '4504f8b37365c3d0'
+    },
+    filters: {
+        minYear: 2016,
+        maxYear: 2026,
     }
 };
 

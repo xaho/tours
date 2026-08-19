@@ -1,10 +1,4 @@
-const events: {
-    date: Date;
-    tags?: { namespace: string, tag: string }[],
-    title: string;
-    albumUrl: string;
-    position: { lat: number; lng: number }
-}[] = [
+const events: TravelEvent[] = [
     {
         date: new Date('2021-10-10'),
         title: 'JapFest',
@@ -15,8 +9,7 @@ const events: {
         title: 'Japan Classic Sunday',
         albumUrl: 'https://photos.app.goo.gl/hugWZThwUM18fShh9',
         position: {lat: 51.573976, lng: 5.659092}
-    },
-    {
+    }, {
         date: new Date('2023-07-02'),
         title: 'Japan Classic Sunday',
         albumUrl: 'https://photos.app.goo.gl/rnuKLQF1ddfF7ZQWA',
