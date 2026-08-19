@@ -76,7 +76,7 @@ async function parseGPXFromUrl(url: string): Promise<{ lng: number, lat: number 
     }));
 }
 
-function setSlider(lower: number, upper: number) {
+function setSlider(lower: number, upper: number): void {
     $(yearRangeParagraph).text(`${lower} - ${upper}`);
     minYearValue = lower;
     maxYearValue = upper;
@@ -100,7 +100,7 @@ function updateVisibility(): void {
     }
 }
 
-function resetFilters() {
+function resetFilters(): void {
     for (const f of TagFilters) f.element.checked = true;
     yearRangeSlider.slider("values", [config.filters.minYear, config.filters.maxYear]);
     setSlider(config.filters.minYear, config.filters.maxYear);
@@ -141,14 +141,11 @@ function generateCheckboxesForFilters(): HTMLElement[] {
     return elements;
 }
 
-function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, type, tags}: {
-    title: string,
+function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, tags}: TravelEvent): {
+    element: google.maps.marker.AdvancedMarkerElement,
     date: Date,
-    albumUrl?: string,
-    position: { lat: number, lng: number },
-    type?: string,
-    tags?: { namespace: string, tag: string }[]
-}) {
+    tags?: Tag[]
+} {
     const element = new AdvancedMarkerElement({
         map,
         position,
@@ -159,7 +156,7 @@ function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, t
     if (albumUrl) {
         element.addListener('gmp-click', () => window.open(albumUrl, '_blank'));
     }
-    return {element, date, type, tags};
+    return {element, date, tags};
 }
 
 function createRoutePin(text: string, pitstop = false): google.maps.marker.PinElement {
@@ -169,7 +166,7 @@ function createRoutePin(text: string, pitstop = false): google.maps.marker.PinEl
     });
 }
 
-function createEventPin(text: string) {
+function createEventPin(text: string): google.maps.marker.PinElement {
     return new PinElement({
         glyphText: text,
         background: '#1965C4',
