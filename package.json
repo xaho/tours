@@ -9,6 +9,7 @@
     "build": "tsc",
     "watch": "tsc --watch"
   },
+  "files": ["index.html", "src/index.ts"],
   "author": "",
   "license": "ISC",
   "devDependencies": {
