@@ -23,6 +23,11 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2"
   },
+  "peerDependencies": {
+    "@types/google.maps": "^3.64.0",
+    "@types/jquery": "^4.0.0",
+    "@types/jqueryui": "^1.12.24"
+  },
   "engines": {
     "node": "22",
     "npm": "9"
