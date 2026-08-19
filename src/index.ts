@@ -6,8 +6,12 @@ let AdvancedMarkerElement: typeof google.maps.marker.AdvancedMarkerElement;
 let PinElement: typeof google.maps.marker.PinElement;
 
 const TagFilters: { element: HTMLInputElement, tag: string, namespace: string }[] = [];
-let minYear = 2016;
-let maxYear = 2026;
+const yearRangeParagraph = createElement('p', {id: 'year-range-amount'});
+let yearRangeSlider: JQuery;
+const minYear = 2016;
+let minYearValue = minYear;
+const maxYear = 2026;
+let maxYearValue = maxYear;
 
 const elements: {
     markers: { element: HTMLElement, date: Date, type?: string, tags?: { namespace: string, tag: string }[] }[],
@@ -34,21 +38,34 @@ async function parseTour(url: string): Promise<{ lng: number, lat: number }[]> {
     }));
 }
 
+function setSlider(lower: number, upper: number) {
+    $(yearRangeParagraph).text(`${lower} - ${upper}`);
+    minYearValue = lower;
+    maxYearValue = upper;
+    updateVisibility();
+}
+
 function updateVisibility(): void {
     for (const marker of elements.markers) {
         let visible = true;
-        if (marker.date.getFullYear() < minYear || marker.date.getFullYear() > maxYear) visible = false;
+        if (marker.date.getFullYear() < minYearValue || marker.date.getFullYear() > maxYearValue) visible = false;
         else if (marker.tags?.some(t => TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
         // if one of the marker's tags is not checked, hide the marker
         marker.element.style.visibility = visible ? 'visible' : 'hidden';
     }
     for (const line of elements.lines) {
         let visible = true;
-        if (line.date.getFullYear() < minYear || line.date.getFullYear() > maxYear) visible = false;
+        if (line.date.getFullYear() < minYearValue || line.date.getFullYear() > maxYearValue) visible = false;
         else if (line.tags?.some(t => TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
 
         line.element.setVisible(visible);
     }
+}
+
+function resetFilters() {
+    TagFilters.forEach(f => f.element.checked = true);
+    yearRangeSlider.slider( "values", [ minYear, maxYear] );
+    setSlider(minYear, maxYear);
 }
 
 function generateCheckboxesForFilters(): HTMLElement[] {
@@ -82,6 +99,7 @@ function generateCheckboxesForFilters(): HTMLElement[] {
         }
         elements.push(container);
     }
+    elements.push(createElement('button', {textContent: 'Reset', onclick: resetFilters}))
     return elements;
 }
 
@@ -204,29 +222,21 @@ async function initMap() {
         elements.lines.push(...lines);
     });
     const filterDiv = createElement('div', {id: 'filters'});
-    const yearRangeParagraph = createElement('p', {id: 'amount'});
     const yearHeader = createElement('h1', {textContent: 'Year'});
-    const slider = createElement('div', {id: 'slider-range'});
+    const sliderDiv = createElement('div', {id: 'slider-range'});
 
-    filterDiv.append(yearHeader, yearRangeParagraph, slider, ...generateCheckboxesForFilters());
+    filterDiv.append(yearHeader, yearRangeParagraph, sliderDiv, ...generateCheckboxesForFilters());
 
     map.controls[google.maps.ControlPosition.LEFT_CENTER].push(filterDiv);
 
-    function updateAmount(lower: number, upper: number) {
-        $(yearRangeParagraph).text(`${lower} - ${upper}`);
-        minYear = lower;
-        maxYear = upper;
-        updateVisibility();
-    }
-
-    $(slider).slider({
+    yearRangeSlider = $(sliderDiv).slider({
         range: true,
         min: minYear,
         max: maxYear,
         values: [minYear, maxYear],
         slide: function (_event, ui) {
-            updateAmount(ui.values?.[0] ?? 0, ui.values?.[1] ?? 0);
+            setSlider(ui.values?.[0] ?? 0, ui.values?.[1] ?? 0);
         }
     });
-    updateAmount(minYear, maxYear);
+    setSlider(minYear, maxYear);
 }

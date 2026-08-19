@@ -1,4 +1,5 @@
 <head>
+    <title>Travels</title>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css" integrity="sha256-8I0prl0EXe7lj+6vlcqXn4mMvZdibijLQ4hi+7nvtyI=" crossorigin="anonymous">
     <script defer src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script defer src="https://code.jquery.com/ui/1.14.2/jquery-ui.js" integrity="sha256-zKbi8I2J5A9/AtXEXqfqZN23Mt1wpVcyEDYCF/PSYKw=" crossorigin="anonymous"></script>
@@ -63,10 +64,13 @@
                 color: rgb(25, 25, 25);
                 cursor: pointer;
                 font-family: Roboto, Arial, sans-serif;
-                font-size: 16px;
-                line-height: 38px;
+                line-height: 28px;
                 padding: 0 5px;
-                text-align: 'center';
+                /*text-align: 'center';*/
+
+                &:not(:first-child) {
+                    margin-block-start: 1rem;
+                }
             }
 
             .checkbox-row {
