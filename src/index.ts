@@ -34,7 +34,7 @@ type TravelEvent = {
     date: Date;
     tags?: Tag[],
     title: string;
-    albumUrl: string;
+    albumUrl?: string;
     position: { lat: number; lng: number }
 }
 
