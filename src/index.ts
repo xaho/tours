@@ -87,7 +87,7 @@ function updateVisibility(): void {
     for (const marker of elements.markers) {
         let visible = true;
         if (marker.date.getFullYear() < minYearValue || marker.date.getFullYear() > maxYearValue) visible = false;
-        else if (marker.tags?.some(t => TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
+        else if (marker.tags?.some(t => TagFilters.some(f => f.tag === t.tag && f.namespace === t.namespace && !f.element.checked))) visible = false;
         // if one of the marker's tags is not checked, hide the marker
         marker.element.style.visibility = visible ? 'visible' : 'hidden';
     }
@@ -107,8 +107,9 @@ function resetFilters(): void {
 }
 
 function generateCheckboxesForFilters(): HTMLElement[] {
-    let elements = [];
+    let htmlElements = [];
     let namespaces = [
+        ...elements.markers.flatMap(m => m.tags ?? []),
         ...events.flatMap(e => e.tags ?? []),
         ...routes.flatMap(r => r.segments.flatMap(s => s.tags ?? [])),
         ...routes.flatMap(r => r.tags ?? [])
@@ -135,10 +136,10 @@ function generateCheckboxesForFilters(): HTMLElement[] {
             row.append(checkbox, createElement('label', {textContent: tag, htmlFor: checkbox.id}));
             container.append(row);
         }
-        elements.push(container);
+        htmlElements.push(container);
     }
-    elements.push(createElement('button', {textContent: 'Reset', onclick: resetFilters}))
-    return elements;
+    htmlElements.push(createElement('button', {textContent: 'Reset', onclick: resetFilters}))
+    return htmlElements;
 }
 
 function addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, tags}: TravelEvent): {
