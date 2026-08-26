@@ -188,6 +188,42 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         }
     }
 
+    // jQuery UI's slider widget only listens for mouse events, so it never responds to touch.
+    // Drive the same public API ourselves for touch/pen pointers, leaving mouse to jQuery UI.
+    private enableTouchDrag(sliderElement: HTMLElement): void {
+        const handles = Array.from(sliderElement.querySelectorAll<HTMLElement>('.ui-slider-handle'));
+        handles.forEach((handle, index) => {
+            handle.style.touchAction = 'none';
+            handle.addEventListener('pointerdown', (event: PointerEvent) => {
+                if (event.pointerType === 'mouse') return;
+                event.preventDefault();
+                handle.setPointerCapture(event.pointerId);
+
+                const move = (moveEvent: PointerEvent) => {
+                    const rect = sliderElement.getBoundingClientRect();
+                    const min = Number($(sliderElement).slider('option', 'min'));
+                    const max = Number($(sliderElement).slider('option', 'max'));
+                    const fraction = Math.min(1, Math.max(0, (moveEvent.clientX - rect.left) / rect.width));
+                    const otherValue = $(sliderElement).slider('values', index === 0 ? 1 : 0);
+                    let value = Math.round(min + fraction * (max - min));
+                    value = index === 0 ? Math.min(value, otherValue) : Math.max(value, otherValue);
+
+                    $(sliderElement).slider('values', index, value);
+                    const values = $(sliderElement).slider('values');
+                    this.setSlider(values[0], values[1]);
+                };
+                const up = () => {
+                    handle.removeEventListener('pointermove', move);
+                    handle.removeEventListener('pointerup', up);
+                    handle.removeEventListener('pointercancel', up);
+                };
+                handle.addEventListener('pointermove', move);
+                handle.addEventListener('pointerup', up);
+                handle.addEventListener('pointercancel', up);
+            });
+        });
+    }
+
     resetFilters(): void {
         for (const f of this.TagFilters) f.element.checked = true;
         this.yearRangeSlider?.slider('values', [this.minYear, this.maxYear]);
@@ -352,6 +388,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             }
         });
         this.setSlider(this.minYear, this.maxYear);
+        this.enableTouchDrag(sliderDiv);
     }
 
     initializeGmaps() {
