@@ -107,6 +107,28 @@ function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: P
     return element;
 }
 
+function createCollapsibleMapControl(contentElement: HTMLElement, label: string, addToBottom: boolean = false): HTMLElement {
+    const container = createElement('div', {classlist: ['collapsible-map-control']});
+    const toggle = createElement('button', {
+        classlist: ['collapsible-map-control__toggle'],
+        textContent: `Show ${label}`,
+        title: `Toggle ${label}`,
+        ariaLabel: `Toggle ${label}`,
+        ariaExpanded: 'false'
+    });
+
+    contentElement.classList.add('collapsible-map-control__content');
+
+    toggle.addEventListener('click', () => {
+        const expanded = container.classList.toggle('collapsible-map-control--expanded');
+        toggle.ariaExpanded = String(expanded);
+        toggle.textContent = expanded ? `Hide ${label}` : `Show ${label}`;
+    });
+    if (addToBottom) container.append(contentElement, toggle);
+    else container.append(toggle, contentElement);
+    return container;
+}
+
 async function parseGPXFromUrl(url: string): Promise<{ lng: number, lat: number }[]> {
     const routeXml = await (await fetch(url)).text();
     const parser = new DOMParser();
@@ -318,7 +340,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         const sliderDiv = createElement('div', {id: 'slider-range'});
         filterDiv.append(yearHeader, this.yearRangeParagraph, sliderDiv, ...this.generateCheckboxesForFilters());
 
-        map.controls[google.maps.ControlPosition.LEFT_CENTER].push(filterDiv);
+        map.controls[google.maps.ControlPosition.LEFT_TOP].push(createCollapsibleMapControl(filterDiv, 'Filters'));
 
         this.yearRangeSlider = $(sliderDiv).slider({
             range: true,
@@ -350,6 +372,7 @@ export {
     Route,
     NamespacedTag,
     TravelEvent,
+    createCollapsibleMapControl,
     Marker,
     Line,
     createRoutePin,

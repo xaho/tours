@@ -1,4 +1,5 @@
 import {
+    createCollapsibleMapControl,
     createElement,
     createEventPin,
     createRoutePin,
@@ -290,7 +291,7 @@ window.addEventListener('map-loaded', (event: CustomEventInit<{ map: google.maps
         createElement('div', {classlist: ['legend-subtext'], textContent: '(Click marker to view photos)'})
     );
 
-    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(createCollapsibleMapControl(legend, 'legend', true));
 });
 
 getRoutes().then(routes => {
