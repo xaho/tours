@@ -18,16 +18,20 @@ enum Organizer {
     ZX = 'Z-ZX Club',
     EpicCarEvents = 'Epic Car Events',
     BelgiumZOwners = 'Belgium Z Owners',
-    GT86Club = 'GT86 Club'
+    GT86Club = 'GT86 Club',
+    '402Automotive' = '402 Automotive',
+    JCS = 'Japan Classic Sunday',
+    DatsunFrance = 'Datsun-France',
+    CTDGermany = 'CTD Germany',
 }
 
 type Tag = NamespacedTag<{
-    'Organizer': `${Organizer}`,
-    'Markers': `${MARKER_TYPE}`,
-    'Transport': `${TRANSPORT_TYPE}`
+    Organizer: `${Organizer}`,
+    Markers: `${MARKER_TYPE}`,
+    Transport: `${TRANSPORT_TYPE}`
 }>
 
-const events: TravelEvent<Tag>[] = ([
+const eventsData: {date: Date, tags: Tag[], title: string, position: {lat: number, lng: number}, albumUrl?: string}[] = [
     {
         date: new Date('2021-10-10'),
         title: 'JapFest',
@@ -95,7 +99,8 @@ const events: TravelEvent<Tag>[] = ([
         position: {lat: 51.714717, lng: 4.883165 + 0.002},
         tags: [{namespace: 'Organizer', tag: '402 Automotive'}]
     }
-] as {date: Date, tags: Tag[], title: string, position: {lat: number, lng: number}, albumUrl?: string}[]).map(e => {
+];
+const events: TravelEvent<Tag>[] = eventsData.map(e => {
     e.tags = [...(e.tags ?? []),
         {namespace: 'Transport', tag: TRANSPORT_TYPE.CAR},
         {namespace: 'Markers', tag: MARKER_TYPE.EVENT},

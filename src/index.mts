@@ -168,7 +168,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
 
     resetFilters(): void {
         for (const f of this.TagFilters) f.element.checked = true;
-        this.yearRangeSlider?.slider("values", [this.minYear, this.maxYear]);
+        this.yearRangeSlider?.slider('values', [this.minYear, this.maxYear]);
         this.setSlider(this.minYear, this.maxYear);
     }
 
@@ -208,11 +208,12 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         return htmlElements;
     }
 
-    addEventToMap(map: google.maps.Map, {title, date, albumUrl, position, tags}: TravelEvent<T>): {
+    addEventToMap(map: google.maps.Map, travelEvent: TravelEvent<T>): {
         element: google.maps.marker.AdvancedMarkerElement,
         date: Date,
         tags?: T[]
     } {
+        const {date, position, albumUrl, title, tags} = travelEvent;
         const element = new AdvancedMarkerElement({
             map,
             position,
