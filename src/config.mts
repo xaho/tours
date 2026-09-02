@@ -262,12 +262,22 @@ async function getRoutes(): Promise<Route<Tag>[]> {
 
 const config: MapConfig = {
     map: {
-        zoom: 8,
+        zoom: 0,
+        renderingType: 'VECTOR',
+        isFractionalZoomEnabled: false,
         center: {lat: 52.092, lng: 5.104},
         mapTypeId: 'terrain',
         mapId: '4504f8b37365c3d0',
-        key: 'AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ'
     },
+    initialBounds: {
+        // 50.657453, 7.047325
+        // 3.076172,50.278809,7.371826,53.657661
+        south: 50.2,
+        east: 7.5,
+        north: 53.7,
+        west: 3.05
+    },
+    key: 'AIzaSyBSlX2Yz056seqJJ-c3cnzHHWap8SlV8NQ',
     filters: {
         minYear: 2016,
         maxYear: 2026,

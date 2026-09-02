@@ -8,13 +8,9 @@ let Polyline: typeof google.maps.Polyline;
 let GoogleMap: typeof google.maps.Map;
 
 type MapConfig = {
-    map: {
-        zoom?: number,
-        center?: { lat: number, lng: number },
-        mapTypeId?: `${google.maps.MapTypeId}`,
-        mapId?: string,
-        key?: string
-    },
+    map: google.maps.MapOptions,
+    initialBounds?: google.maps.LatLngBoundsLiteral,
+    key: string,
     filters: {
         minYear?: number,
         maxYear?: number,
@@ -389,13 +385,14 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         });
         this.setSlider(this.minYear, this.maxYear);
         this.enableTouchDrag(sliderDiv);
+        if (this.config.initialBounds) map.fitBounds(this.config.initialBounds);
     }
 
     initializeGmaps() {
         window.initMap = this.initMap.bind(this);
         document.head.append(
             createElement('script', {
-                src: `https://maps.googleapis.com/maps/api/js?key=${this.config.map.key}&loading=async&callback=${this.initMap.name}`
+                src: `https://maps.googleapis.com/maps/api/js?key=${this.config.key}&loading=async&callback=${this.initMap.name}`
             })
         );
     }
