@@ -11,7 +11,7 @@ import {
     Tours,
     TRANSPORT_TYPE,
     TravelEvent
-} from './index.mjs';
+} from './index.js';
 
 const filenameRegex = /..\/resources\/(?<tourname>.*)\.gpx/;
 
