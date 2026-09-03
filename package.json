@@ -13,10 +13,10 @@
   },
   "files": [
     "index.html",
-    "src/index.ts",
-    "src/tours.d.ts",
+    "dist",
     "tsconfig.json"
   ],
+  "types": "dist/index.d.ts",
   "author": "",
   "license": "ISC",
   "devDependencies": {
