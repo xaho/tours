@@ -206,7 +206,8 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
 
                     $(sliderElement).slider('values', index, value);
                     const values = $(sliderElement).slider('values');
-                    this.setSlider(values[0], values[1]);
+                    if (values[0] && values[1])
+                        this.setSlider(values[0], values[1]);
                 };
                 const up = () => {
                     handle.removeEventListener('pointermove', move);
@@ -234,15 +235,14 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             ...this.routes.flatMap(r => r.segments.flatMap(s => s.tags ?? [])),
             ...this.routes.flatMap(r => r.tags ?? [])
         ].reduce((prev, cur) => {
-            prev[cur.namespace] ??= prev[cur.namespace] ?? {tags: new Set()};
-            prev[cur.namespace].tags.add(cur.tag);
+            (prev[cur.namespace] ??= prev[cur.namespace] ?? {tags: new Set()}).tags.add(cur.tag);
             return prev;
         }, {} as { [namespace: PropertyKey]: { tags: Set<string> } });
         for (let namespace in namespaces) {
-            let filter = {namespace, tags: namespaces[namespace].tags};
+            const tags = namespaces[namespace]?.tags ?? new Set();
             const container = createElement('div');
-            container.append(createElement('h1', {textContent: filter.namespace}));
-            for (let tag of filter.tags) {
+            container.append(createElement('h1', {textContent: namespace}));
+            for (let tag of tags) {
                 const row = createElement('div', {classlist: ['checkbox-row']});
                 const checkbox = createElement('input', {
                     id: `${tag}-checkbox`,
@@ -251,7 +251,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
                     name: tag,
                     value: tag
                 });
-                this.TagFilters.push({element: checkbox, tag, namespace: filter.namespace});
+                this.TagFilters.push({element: checkbox, tag, namespace});
                 checkbox.addEventListener('change', () => this.updateVisibility());
                 row.append(checkbox, createElement('label', {textContent: tag, htmlFor: checkbox.id}));
                 container.append(row);
@@ -291,7 +291,9 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             lines: Line<T>[]
         } = {markers: [], lines: []};
         for (let i = 0; i < segments.length; i++) {
-            const {path, tags} = segments[i];
+            const segment = segments[i];
+            if (segment === undefined) continue;
+            const {path, tags} = segment;
             const polyline = new Polyline({
                 path,
                 geodesic: true,
@@ -372,7 +374,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         const sliderDiv = createElement('div', {id: 'slider-range'});
         filterDiv.append(yearHeader, this.yearRangeParagraph, sliderDiv, ...this.generateCheckboxesForFilters());
 
-        map.controls[google.maps.ControlPosition.LEFT_TOP].push(createCollapsibleMapControl(filterDiv, 'Filters'));
+        map.controls[google.maps.ControlPosition.LEFT_TOP]?.push(createCollapsibleMapControl(filterDiv, 'Filters'));
 
         this.yearRangeSlider = $(sliderDiv).slider({
             range: true,
