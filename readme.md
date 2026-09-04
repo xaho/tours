@@ -12,7 +12,7 @@ new Tours(config, routes, events)
 
 ## How to update to a later version
 
-`npm install --save github:xaho/tours@latest`
+`npm install --save github:xaho/tours`
 
 # How to create GPX files
 
