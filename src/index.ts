@@ -7,7 +7,7 @@ let PinElement: typeof google.maps.marker.PinElement;
 let Polyline: typeof google.maps.Polyline;
 let GoogleMap: typeof google.maps.Map;
 
-type MapConfig = {
+export type MapConfig = {
     map: google.maps.MapOptions,
     initialBounds?: google.maps.LatLngBoundsLiteral,
     key: string,
@@ -17,7 +17,7 @@ type MapConfig = {
     }
 }
 
-type Route<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
+export type Route<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
     date: Date,
     title: string,
     tags?: T[],
@@ -26,7 +26,7 @@ type Route<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
     color?: string
 };
 
-type NamespacedTag<T extends Record<PropertyKey, PropertyKey>> = {
+export type NamespacedTag<T extends Record<PropertyKey, PropertyKey>> = {
     [K in keyof T]: {
         namespace: K;
         tag: T[K];
@@ -40,28 +40,29 @@ type RouteSegment<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
 
 type Point = { lat: number, lng: number };
 
-type TravelEvent<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
+export type TravelEvent<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
     date: Date;
     tags?: T[],
     title: string;
     albumUrl?: string;
-    position: { lat: number; lng: number }
+    pinElement?: HTMLElement,
+    position: Point
 }
 
-type Marker<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
+export type Marker<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
     element: google.maps.marker.AdvancedMarkerElement,
     date: Date,
     type?: string,
     tags?: T[]
 };
 
-type Line<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
+export type Line<T extends NamespacedTag<Record<PropertyKey, PropertyKey>>> = {
     element: google.maps.Polyline,
     date: Date,
     tags?: T[]
 }
 
-enum MARKER_TYPE {
+export enum MARKER_TYPE {
     HOTEL = 'Hotel',
     POI = 'Point of interest',
     EVENT = 'Event',
@@ -70,21 +71,22 @@ enum MARKER_TYPE {
     PITSTOP = 'Pitstop'
 }
 
-enum TRANSPORT_TYPE {
+export enum TRANSPORT_TYPE {
     CAR = 'Car',
     TRAIN = 'Train',
     BUS = 'Bus',
-    FERRY = 'Ferry'
+    FERRY = 'Ferry',
+    WALKING = 'Walking'
 }
 
-function createRoutePin(text: string, pitstop = false): google.maps.marker.PinElement {
+export function createRoutePin(text: string, pitstop = false): google.maps.marker.PinElement {
     return new PinElement({
         glyphText: pitstop ? undefined : text,
         glyphColor: pitstop ? undefined : 'white',
     });
 }
 
-function createEventPin(text: string): google.maps.marker.PinElement {
+export function createEventPin(text: string): google.maps.marker.PinElement {
     return new PinElement({
         glyphText: text,
         background: '#1965C4',
@@ -93,17 +95,18 @@ function createEventPin(text: string): google.maps.marker.PinElement {
     });
 }
 
-function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: Partial<HTMLElementTagNameMap[K]> & {
+export function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, options: Partial<HTMLElementTagNameMap[K]> & {
     styles?: Partial<CSSStyleDeclaration>,
     classlist?: string[]
 } = {}) {
     const element = document.createElement(tag);
-    Object.assign(element, options, {style: options.styles});
+    Object.assign(element, options);
+    Object.assign(element.style, options.styles);
     if (options.classlist) element.classList.add(...options.classlist);
     return element;
 }
 
-function createCollapsibleMapControl(contentElement: HTMLElement, label: string, addToBottom: boolean = false): HTMLElement {
+export function createCollapsibleMapControl(contentElement: HTMLElement, label: string, addToBottom: boolean = false): HTMLElement {
     const container = createElement('div', {classlist: ['collapsible-map-control']});
     const toggle = createElement('button', {
         classlist: ['collapsible-map-control__toggle'],
@@ -125,7 +128,7 @@ function createCollapsibleMapControl(contentElement: HTMLElement, label: string,
     return container;
 }
 
-async function parseGPXFromUrl(url: string): Promise<{ lng: number, lat: number }[]> {
+export async function parseGPXFromUrl(url: string): Promise<Point[]> {
     const routeXml = await (await fetch(url)).text();
     const parser = new DOMParser();
     const route = parser.parseFromString(routeXml, 'text/xml');
@@ -135,16 +138,16 @@ async function parseGPXFromUrl(url: string): Promise<{ lng: number, lat: number 
     }));
 }
 
-class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
+export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
     private TagFilters: { element: HTMLInputElement, tag: string, namespace: string }[] = [];
-    private yearRangeParagraph = createElement('p', {id: 'year-range-amount'});
+    private readonly yearRangeParagraph = createElement('p', {id: 'year-range-amount'});
     private yearRangeSlider: JQuery | undefined;
     private readonly routes: Route<T>[] = [];
     private readonly minYear: number;
     private minYearValue: number;
     private readonly maxYear: number;
     private maxYearValue: number;
-    private config: MapConfig;
+    private readonly config: MapConfig;
 
     private elements: {
         markers: Marker<T>[],
@@ -178,7 +181,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         for (const line of this.elements.lines) {
             let visible = true;
             if (line.date.getFullYear() < this.minYearValue || line.date.getFullYear() > this.maxYearValue) visible = false;
-            else if (line.tags?.some(t => this.TagFilters.some(f => f.tag === t.tag && !f.element.checked))) visible = false;
+            else if (line.tags?.some(t => this.TagFilters.some(f => f.tag === t.tag && f.namespace === t.namespace && !f.element.checked))) visible = false;
 
             line.element.setVisible(visible);
         }
@@ -258,7 +261,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             }
             htmlElements.push(container);
         }
-        htmlElements.push(createElement('button', {textContent: 'Reset', onclick: this.resetFilters}))
+        htmlElements.push(createElement('button', {textContent: 'Reset', onclick: this.resetFilters.bind(this)}))
         return htmlElements;
     }
 
@@ -272,7 +275,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             map,
             position,
             title,
-            content: createEventPin(`'${date.getFullYear() - 2000}`)
+            content: travelEvent.pinElement ?? createEventPin(`'${date.getFullYear() - 2000}`)
         });
 
         if (albumUrl) {
@@ -290,10 +293,7 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             markers: Marker<T>[],
             lines: Line<T>[]
         } = {markers: [], lines: []};
-        for (let i = 0; i < segments.length; i++) {
-            const segment = segments[i];
-            if (segment === undefined) continue;
-            const {path, tags} = segment;
+        segments.forEach(({path, tags}, i) => {
             const polyline = new Polyline({
                 path,
                 geodesic: true,
@@ -339,13 +339,12 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             elements.markers.push({
                 element: marker,
                 date,
-                type: MARKER_TYPE.ROUTE_START,
                 tags: [...(tags ?? []), {
                     namespace: 'Markers',
                     tag: i === 0 ? MARKER_TYPE.ROUTE_START : MARKER_TYPE.PITSTOP
                 } as T]
             });
-        }
+        });
         return elements;
     }
 
@@ -378,8 +377,8 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
 
         this.yearRangeSlider = $(sliderDiv).slider({
             range: true,
-            min: this.config.filters.minYear,
-            max: this.config.filters.maxYear,
+            min: this.minYear,
+            max: this.maxYear,
             values: [this.minYear, this.maxYear],
             slide: (_event, ui) => {
                 this.setSlider(ui.values?.[0] ?? 0, ui.values?.[1] ?? 0);
@@ -399,20 +398,3 @@ class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         );
     }
 }
-
-export {
-    Tours,
-    MARKER_TYPE,
-    TRANSPORT_TYPE,
-    parseGPXFromUrl,
-    Route,
-    NamespacedTag,
-    TravelEvent,
-    createCollapsibleMapControl,
-    Marker,
-    Line,
-    createRoutePin,
-    createEventPin,
-    createElement,
-    MapConfig
-};
