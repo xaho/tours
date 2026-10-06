@@ -170,6 +170,19 @@ export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         this.updateVisibility();
     }
 
+    async handleCheckboxOnChange(event: Event) {
+        if (event.target instanceof HTMLInputElement) {
+            await cookieStore.set('tagFilters', JSON.stringify(this.TagFilters.reduce(
+                (acc, {tag, namespace, element}) => {
+                    acc[namespace] ??= {};
+                    acc[namespace][tag] = element.checked;
+                    return acc;
+                },
+                {} as Record<string, Record<string, boolean>>)));
+        }
+        this.updateVisibility();
+    }
+
     updateVisibility(): void {
         for (const marker of this.elements.markers) {
             let visible = true;
@@ -224,13 +237,14 @@ export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         });
     }
 
-    resetFilters(): void {
+    async resetFilters(): Promise<void> {
         for (const f of this.TagFilters) f.element.checked = true;
         this.yearRangeSlider?.slider('values', [this.minYear, this.maxYear]);
         this.setSlider(this.minYear, this.maxYear);
+        await cookieStore.delete('tagFilters');
     }
 
-    private generateCheckboxesForFilters(): HTMLElement[] {
+    private async generateCheckboxesForFilters(): Promise<HTMLElement[]> {
         let htmlElements = [];
         let namespaces = [
             ...this.elements.markers.flatMap(m => m.tags ?? []),
@@ -241,6 +255,7 @@ export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
             (prev[cur.namespace] ??= prev[cur.namespace] ?? {tags: new Set()}).tags.add(cur.tag);
             return prev;
         }, {} as { [namespace: PropertyKey]: { tags: Set<string> } });
+        const filterState: Record<string, Record<string, boolean>> = JSON.parse((await cookieStore.get('tagFilters'))?.value ?? '{}');
         for (let namespace in namespaces) {
             const tags = namespaces[namespace]?.tags ?? new Set();
             const container = createElement('div');
@@ -254,8 +269,11 @@ export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
                     name: tag,
                     value: tag
                 });
+                checkbox.dataset["tag"] = tag;
+                checkbox.dataset["namespace"] = namespace;
+                checkbox.checked = filterState[namespace]?.[tag] ?? true;
                 this.TagFilters.push({element: checkbox, tag, namespace});
-                checkbox.addEventListener('change', () => this.updateVisibility());
+                checkbox.addEventListener('change', this.handleCheckboxOnChange.bind(this));
                 row.append(checkbox, createElement('label', {textContent: tag, htmlFor: checkbox.id}));
                 container.append(row);
             }
@@ -371,7 +389,7 @@ export class Tours<T extends NamespacedTag<Record<PropertyKey, string>>> {
         const filterDiv = createElement('div', {id: 'filters'});
         const yearHeader = createElement('h1', {textContent: 'Year'});
         const sliderDiv = createElement('div', {id: 'slider-range'});
-        filterDiv.append(yearHeader, this.yearRangeParagraph, sliderDiv, ...this.generateCheckboxesForFilters());
+        filterDiv.append(yearHeader, this.yearRangeParagraph, sliderDiv, ...(await this.generateCheckboxesForFilters()));
 
         map.controls[google.maps.ControlPosition.LEFT_TOP]?.push(createCollapsibleMapControl(filterDiv, 'Filters'));
 
